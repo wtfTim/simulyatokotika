@@ -1,198 +1,488 @@
+<!doctype html>
+<html lang="ru">
 
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>Bad Cat 3D — Большой дом</title><style>
-*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#a9d5e9;font:600 15px system-ui,sans-serif;touch-action:none}canvas{display:block}button{font:800 14px system-ui;cursor:pointer;touch-action:none;border:0}#hud{position:absolute;left:14px;top:12px;color:white;text-shadow:0 2px 5px #584c55;pointer-events:none}#hud strong{font-size:25px}#room{font-size:13px}#msg{position:absolute;top:88px;left:50%;transform:translateX(-50%);color:#fff;text-shadow:0 2px 4px #555;font-size:19px;font-weight:900;text-align:center;pointer-events:none;transition:opacity .3s;opacity:0;min-width:220px}#help{position:absolute;top:12px;right:12px;background:#fff9;padding:9px;border-radius:12px;color:#574657;font-size:12px;max-width:240px}#joy{position:absolute;bottom:24px;left:24px;width:122px;height:122px;border:3px solid #fff9;background:#fff5;border-radius:50%;touch-action:none}#nub{position:absolute;left:38px;top:38px;width:40px;height:40px;border-radius:50%;background:#fffb;box-shadow:0 2px 8px #0003}#actions{position:absolute;bottom:22px;right:18px;display:grid;grid-template-columns:repeat(3,73px);gap:7px}#actions button{height:65px;border-radius:22px;color:white;text-shadow:0 1px 2px #0004;box-shadow:0 4px 0 #0002}#jump{background:#f6a35e}#swat{background:#e97684}#scratch{background:#9270d6}#tear{background:#59b5a8}#eat{background:#d4a64f}#sleep{background:#6989bf}#meow{background:#bc78b9}#start{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:#322b3ec9;padding:20px;color:#453b4c;text-align:center}#panel{max-width:480px;background:#fff9f3;border-radius:24px;padding:25px;box-shadow:0 20px 55px #0005}#panel h1{margin:0 0 8px;font-size:31px}#panel p{line-height:1.5}#play{padding:15px 38px;background:#fa9467;border-radius:14px;color:#fff;font-size:20px}#reset{position:absolute;top:65px;right:12px;background:#fff9;padding:7px 12px;border-radius:10px}#minimap{position:absolute;bottom:170px;left:20px;background:#ffffffaa;border-radius:12px;padding:7px;font-size:12px;color:#52455a} @media(max-width:650px){#help{display:none}#minimap{display:none}#actions{grid-template-columns:repeat(3,58px)}#actions button{height:56px;font-size:10px}#joy{width:112px;height:112px}#nub{left:33px;top:33px}#hud strong{font-size:21px}}
-</style></head><body><div id="hud"><strong>🐟 <span id="score">0</span></strong><div id="room">🏠 Гостиная · 1 этаж</div><div id="tasks">💥 Шалости: <span id="count">0</span></div><div id="needs">🍗 <span id="hunger">85</span>% · ⚡ <span id="energy">90</span>% · 👀 <span id="alert">Спокойно</span></div><div id="mood">😺 Настроение: <span id="moodValue">Довольный</span></div><div id="quest">🎯 <span id="questText">Сделай 3 шалости</span></div></div><div id="help">⌨️ WASD / стрелки — идти · Shift — бег<br>Пробел — прыгать · E — толкнуть<br>F — царапать · R — рвать<br>G — есть/воровать · H — спать · M — мяукать<br>Мышь / свайп — повернуть направление · Q — сброс камеры<br>T — телевизор · C — холодильник · O — двери · P — сохранение</div><button id="reset">↻ Заново</button><div id="msg"></div><div id="minimap">🏠 Два этажа · лестница справа<br>🛋️ Гостиная · 🍳 Кухня · 🛏️ Спальня<br>🛁 Ванная · 🎮 Игровая · 📚 Кабинет</div><div id="joy"><div id="nub"></div></div><div id="actions"><button id="jump">🐾<br>ПРЫГ</button><button id="swat">💥<br>ТОЛКНИ</button><button id="scratch">🐈<br>ЦАРАПАЙ</button><button id="tear">🧻<br>РВИ</button><button id="eat">🐟<br>ЕШЬ</button><button id="sleep">💤<br>СПАТЬ</button><button id="meow">🔊<br>МЯУ</button><button id="use" style="background:#4b9a8a">🚪<br>ДЕЙСТВИЕ</button></div><div id="start"><div id="panel"><h1>🐱 Bad Cat 3D</h1><h2>Кошачий симулятор — версия 0.5 · Уютный особняк</h2><p>Живой двухэтажный дом! Хозяин патрулирует комнаты и реагирует на шалости. Прячься, воруй рыбу, ешь, спи, мяукай и выполняй задания. Включи звук!</p><p>⌨️ WASD, Shift, Пробел, E, F, R, G, H, M<br>📱 Джойстик и кнопки · T/C/O/P — дом и сохранения</p><button id="play">Играть! 🐾</button></div></div>
-<script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
-const scene=new THREE.Scene();scene.background=new THREE.Color('#aed9ed');scene.fog=new THREE.Fog('#aed9ed',42,95);
-const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,110),renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;document.body.prepend(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xffffff,0x8891ae,2.15));const sun=new THREE.DirectionalLight(0xfff1dc,2.6);sun.position.set(-10,19,14);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-24;sun.shadow.camera.right=24;sun.shadow.camera.top=24;sun.shadow.camera.bottom=-24;scene.add(sun);
-const M=(c,r=0.85)=>new THREE.MeshStandardMaterial({color:c,roughness:r}),mat={wood:M('#c99872'),plank:M('#d6ae85'),wall:M('#f6e9de'),wall2:M('#dbe5eb'),cream:M('#fff5de'),blue:M('#8baccf'),darkBlue:M('#6685ae'),pink:M('#e6a1b2'),green:M('#8dc5a4'),brown:M('#8c5e47'),dark:M('#544453'),glass:new THREE.MeshStandardMaterial({color:'#b9eaff',transparent:true,opacity:.58,roughness:.12}),orange:M('#ee974b'),white:M('#ffffff'),black:M('#352f3b'),paper:M('#f5f2e6')};
-// Canvas-generated wood grain and woven fabric: no downloaded textures required.
-function texture(type,a,b){const c=document.createElement('canvas');c.width=c.height=256;const ctx=c.getContext('2d');ctx.fillStyle=a;ctx.fillRect(0,0,256,256);let seed=17;function rnd(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}if(type==='wood'){for(let i=0;i<110;i++){ctx.strokeStyle=b;ctx.globalAlpha=.035+rnd()*.12;ctx.lineWidth=.5+rnd()*2;ctx.beginPath();const y=rnd()*256;ctx.moveTo(0,y);ctx.bezierCurveTo(70,y+rnd()*10,190,y-rnd()*10,256,y);ctx.stroke()}}else{for(let i=0;i<256;i+=4){ctx.globalAlpha=.13;ctx.fillStyle=b;ctx.fillRect(i,0,1,256);ctx.fillRect(0,i,256,1)}}ctx.globalAlpha=1;const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,2);return t}
-mat.plank.map=texture('wood','#e4bb93','#714832');mat.plank.color.set('#ffffff');mat.wood.map=texture('wood','#b47a4f','#543b31');mat.wood.color.set('#ffffff');mat.blue.map=texture('fabric','#94b1d0','#4b648c');mat.blue.color.set('#ffffff');mat.pink.map=texture('fabric','#e7a9b6','#96516c');mat.pink.color.set('#ffffff');
-const colliders=[],surfaces=[],interactables=[],decor=[];const house=new THREE.Group();scene.add(house);
-function cube(w,h,d,m,x,y,z,opts={}){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=opts.shadow!==false;o.receiveShadow=true;(opts.parent||house).add(o);if(opts.solid)colliders.push({x1:x-w/2,x2:x+w/2,z1:z-d/2,z2:z+d/2,y1:y-h/2,y2:y+h/2});if(opts.top)surfaces.push({x1:x-w/2,x2:x+w/2,z1:z-d/2,z2:z+d/2,y:y+h/2});return o}
-function sphere(r,m,x,y,z,parent=house,sx=1,sy=1,sz=1){const o=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;parent.add(o);return o}
-function cylinder(rt,rb,h,m,x,y,z,opts={}){const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,12),m);o.position.set(x,y,z);o.castShadow=true;(opts.parent||house).add(o);if(opts.solid)colliders.push({x1:x-rt,x2:x+rt,z1:z-rt,z2:z+rt,y1:y-h/2,y2:y+h/2});if(opts.top)surfaces.push({x1:x-rt,x2:x+rt,z1:z-rt,z2:z+rt,y:y+h/2});return o}
-const F=3.55;cube(22,.28,18,mat.plank,0,-.14,0,{top:true}); // ground
-// upper level: open stairwell at x 6..10, z 1..8
-cube(16,.25,18,mat.plank,-3,F-.125,0,{top:true});cube(6,.25,10,mat.plank,8,F-.125,-4,{top:true});
-// outer walls: partial heights let camera see inside
-for(const level of [0,1]){const b=level*F;cube(22,2.7,.24,mat.wall,0,b+1.35,-9,{solid:true});cube(.24,2.7,18,mat.wall,-11,b+1.35,0,{solid:true});cube(.24,2.7,18,mat.wall,11,b+1.35,0,{solid:true});cube(22,.55,.22,mat.wall,0,b+.28,9,{solid:true});}
-// interior dividers with walkable gaps
-function wallX(x,z1,z2,y,material=mat.wall2){cube(.18,2.7,z2-z1,material,x,y+1.35,(z1+z2)/2,{solid:true})}
-function wallZ(z,x1,x2,y,material=mat.wall2){cube(x2-x1,2.7,.18,material,(x1+x2)/2,y+1.35,z,{solid:true})}
-for(const y of [0,F]){wallX(0,-9,-1.4,y);wallX(0,1.2,9,y);wallZ(0,-11,-2.2,y);wallZ(0,1.5,5.8,y);wallZ(0,8.2,11,y)}
-// staircase, rises from y=0 at x=8, z=7.5 toward z=0
-const stairN=14,stepD=.47;for(let i=0;i<stairN;i++){const h=F*(i+1)/stairN,z=7.8-i*stepD;cube(2.7,h,stepD+.02,mat.wood,8.1,h/2,z,{top:true})}cube(.18,1.1,7.2,mat.cream,6.65,1.9,4.4); // handrail decorative
-// rugs
-for(const [x,z,w,d,color,y] of [[-5,4,5,4,'#ead0a7',.02],[-5,-5,4,3,'#d4e4f3',.02],[4,-5,4,3,'#d7e9bd',.02],[-5,4,4,3,'#f2d2d8',F+.02],[4,-5,4,3,'#c8d8ec',F+.02]])cube(w,.025,d,M(color),x,y,z,{shadow:false});
-function table(x,z,y=0,w=2.4,d=1.35){cube(w,.18,d,mat.wood,x,y+1.08,z,{solid:true,top:true});for(const sx of [-1,1])for(const sz of [-1,1])cube(.16,1,.16,mat.brown,x+sx*(w/2-.2),y+.5,z+sz*(d/2-.2),{solid:true})}
-function sofa(x,z,y=0){cube(3.7,.67,1.45,mat.blue,x,y+.46,z,{solid:true,top:true});cube(3.7,1.1,.32,mat.darkBlue,x,y+1.02,z-.66,{solid:true});for(const dx of [-1.65,1.65])cube(.4,.78,1.5,mat.darkBlue,x+dx,y+.74,z,{solid:true});for(const dx of [-.9,.8])cube(.85,.18,.85,mat.cream,x+dx,y+.89,z+.2,{solid:true,top:true});}
-function bed(x,z,y=F){cube(3.4,.6,2.8,mat.brown,x,y+.46,z,{solid:true,top:true});cube(3.15,.23,2.5,mat.cream,x,y+.85,z,{solid:true,top:true});cube(3.4,.9,.22,mat.pink,x,y+.9,z-1.35,{solid:true});for(const dx of [-.85,.85])cube(.9,.13,.5,mat.white,x+dx,y+1.02,z-.85,{solid:true,top:true})}
-function cabinet(x,z,y=0,w=2.2,h=1.7){cube(w,h,.65,mat.brown,x,y+h/2,z,{solid:true,top:true});for(let k=0;k<3;k++)cube(w-.18,.035,.68,mat.wood,x,y+.45+k*.48,z+.02);}
-function plant(x,z,y=0){cylinder(.32,.25,.5,mat.brown,x,y+.25,z,{solid:true,top:true});for(let k=0;k<5;k++)sphere(.37,mat.green,x+Math.cos(k*2.5)*.2,y+.85+Math.sin(k)*.2,z+Math.sin(k*2.5)*.2)}
-function lamp(x,z,y=0){cylinder(.15,.18,.1,mat.brown,x,y+.06,z);cylinder(.04,.04,1.7,mat.brown,x,y+.9,z);const shade=new THREE.Mesh(new THREE.ConeGeometry(.42,.65,12),mat.cream);shade.rotation.x=Math.PI;shade.position.set(x,y+1.88,z);house.add(shade)}
-function window3(x,z,y=0){cube(2.7,1.45,.04,mat.glass,x,y+1.75,z,{shadow:false});cube(2.8,.07,.12,mat.white,x,y+1.75,z+.05);cube(.08,1.55,.12,mat.white,x,y+1.75,z+.05)}
-function item(name,x,y,z,kind='knock',color='#f4a4b4'){const m=M(color);let mesh;if(kind==='tear'){mesh=cube(.65,.52,.11,mat.paper,x,y,z)}else if(kind==='scratch'){mesh=cube(.85,.65,.1,mat.pink,x,y,z)}else if(kind==='knock'){mesh=cylinder(.23,.18,.48,m,x,y,z)}else{mesh=cube(.42,.42,.42,m,x,y,z)}interactables.push({name,mesh,kind,used:false,vy:0,vx:0,vz:0,baseY:y,damage:0});return mesh}
-// ground floor: lounge (front-left), kitchen (rear-left), dining (rear-right), hall (front-right)
-sofa(-5,4);table(-5,1.5,0,2.3,1.2);lamp(-9,6.8);plant(-9,1);cabinet(-9,3);item('Ваза',-5,1.42,1.5);item('Пульт',-4.4,1.42,1.5,'box','#3b4b63');item('Шторы',-8.7,1.6,8.5,'scratch');item('Диван',-5,1.2,4,'scratch');item('Журнал',-4.8,.36,6.4,'tear');
-cabinet(-8,-7);table(-5,-5,0,2.8,1.5);item('Тарелка',-5,1.44,-5);item('Стакан',-4.1,1.43,-5.1);item('Полотенце',-8,1.2,-6.6,'tear');item('Шкаф',-8,1.1,-7,'scratch');plant(-9,-2);
-table(4,-5,0,3.2,2);for(const [x,z] of [[2.9,-5],[5.2,-5]])item('Чашка',x,1.44,z);cabinet(8.8,-7.6,0,2.5,1.4);item('Кухонный шкаф',8.8,1.45,-7.5,'scratch');item('Салфетки',6.4,.4,-6.5,'tear');plant(2,-7.5);
-cabinet(3.3,6.8,0,2.3,1.2);item('Рулон бумаги',3.3,1.48,6.8,'tear');item('Коробка',2,.28,3,'box','#e7bd82');item('Обои',.6,1.1,4.5,'scratch');
-// upper floor
-bed(-5,4);cabinet(-9,6.7,F);item('Подушка',-5,F+1.23,4,'box','#fff1cc');item('Плед',-4,F+1.2,5,'tear');item('Кровать',-6,F+1.45,3.7,'scratch');plant(-9,2,F);
-// bathroom
-cube(2.8,.65,1.65,mat.white,-6,F+.5,-5.4,{solid:true,top:true});cube(1.7,.85,.65,mat.white,-9,F+.43,-7,{solid:true,top:true});item('Бумага',-5,F+.3,-3.1,'tear');item('Зеркало',-10.8,F+1.8,-5.5,'scratch');
-// office
-const desk=table(4,-5,F,3,1.7);cube(.95,.07,.65,mat.black,4,F+1.45,-5.5);cube(.15,.45,.1,mat.black,4,F+1.25,-5.5);item('Монитор',4,F+1.75,-5.5,'scratch');item('Блокнот',5,F+1.42,-4.5,'tear');cabinet(8.5,-7,F,2.2,1.7);item('Книги',8.5,F+1.95,-7,'box','#ad85c6');
-// game room upper front right
-cube(2.2,.65,1.5,mat.green,3.4,F+.5,4,{solid:true,top:true});item('Игрушка',3.3,F+1.12,4);item('Когтеточка',5.6,F+.8,6.2,'scratch');item('Бумажный пакет',1.7,F+.35,6,'tear');plant(1.5,2,F);
-for(const [x,z,y] of [[-5,-8.8,0],[4,-8.8,0],[-5,-8.8,F],[4,-8.8,F]])window3(x,z,y);
-// Decor: framed paintings, picture rails, ceiling lights, cushions, plants and kitchen details.
-for(const [x,z,y] of [[-7,-8.82,0],[2.7,-8.82,0],[-7,-8.82,F],[3,-8.82,F]]){cube(1.65,1.1,.06,mat.wood,x,y+1.75,z+.06,{shadow:false});cube(1.4,.87,.07,M(['#91c4bb','#e9bc8d','#b5a6d7'][Math.abs(Math.round(x))%3]),x,y+1.75,z+.12,{shadow:false});sphere(.19,mat.cream,x+.3,y+1.88,z+.17,house,1,1,.2)}
-for(const [x,z,y] of [[-5,3,0],[-5,-5,0],[4,-5,0],[-5,4,F],[4,-5,F]]){const light=new THREE.PointLight(0xffe5b9,1.2,8,2);light.position.set(x,y+2.6,z);scene.add(light);sphere(.18,mat.cream,x,y+2.55,z)}
-for(const [x,z,y] of [[-2,7,0],[-2,-3,0],[2,-3,0],[-2,7,F],[-2,-3,F]]){cylinder(.22,.22,.07,mat.wood,x,y+.06,z);sphere(.16,mat.green,x,y+.23,z)}
-// v0.5: detailed procedural furnishings, all built with rounded geometry and warm materials.
-const metal=new THREE.MeshStandardMaterial({color:'#b8a8a0',metalness:.7,roughness:.25});
-const velvet=new THREE.MeshStandardMaterial({color:'#537a87',roughness:.94});
-const brass=new THREE.MeshStandardMaterial({color:'#c6a16a',metalness:.75,roughness:.28});
-function rounded(w,h,d,r,material,x,y,z,parent=house){
- const shape=new THREE.Shape(),hw=w/2,hd=d/2,rr=Math.min(r,hw,hd);
- shape.moveTo(-hw+rr,-hd);shape.lineTo(hw-rr,-hd);shape.quadraticCurveTo(hw,-hd,hw,-hd+rr);
- shape.lineTo(hw,hd-rr);shape.quadraticCurveTo(hw,hd,hw-rr,hd);shape.lineTo(-hw+rr,hd);
- shape.quadraticCurveTo(-hw,hd,-hw,hd-rr);shape.lineTo(-hw,-hd+rr);shape.quadraticCurveTo(-hw,-hd,-hw+rr,-hd);
- const geo=new THREE.ExtrudeGeometry(shape,{depth:h,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.035,bevelThickness:.035,curveSegments:5});
- geo.rotateX(-Math.PI/2);const mesh=new THREE.Mesh(geo,material);mesh.position.set(x,y-h/2,z);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
-}
-// Upholstered sofa cushions with piping, wooden feet, and fabric throw.
-for(const x of [-6.15,-5.25,-4.35]){rounded(.82,.24,.83,.14,velvet,x,.91,4.35);rounded(.78,.67,.19,.08,mat.blue,x,1.22,3.64)}
-for(const x of [-6.5,-3.7])for(const z of [3.72,4.75])cylinder(.075,.075,.17,mat.brown,x,.1,z);
-rounded(.9,.055,.7,.08,mat.pink,-4.25,1.01,4.7);
-// Coffee table: curved top, lower shelf, tapered legs and magazines.
-rounded(1.75,.12,.93,.17,mat.wood,-5.25,.61,6.25);
-rounded(1.42,.07,.69,.12,mat.brown,-5.25,.22,6.25);
-for(const x of [-5.95,-4.55])for(const z of [5.94,6.56])cylinder(.055,.08,.51,mat.brown,x,.32,z);
-rounded(.48,.035,.33,.025,mat.paper,-5.35,.71,6.23);
-// Kitchen cabinets, counter handles, backsplash tile seams and sink.
-for(let i=0;i<5;i++){
- const x=-9.6+i*.75;rounded(.69,.8,.63,.055,mat.wood,x,.53,-7.55);
- rounded(.36,.025,.025,.01,metal,x,.65,-7.19);
-}
-rounded(4.1,.15,.83,.12,mat.cream,-8.05,1.03,-7.55);
-rounded(.87,.04,.6,.11,metal,-8.55,1.115,-7.55);
-rounded(.66,.025,.43,.09,mat.dark,-8.55,1.14,-7.55);
-const tap=cylinder(.035,.035,.55,metal,-8.82,1.4,-7.8);tap.rotation.z=.35;
-for(let i=0;i<7;i++)cube(.015,.38,.02,M('#e1d4ca'),-9.8+i*.53,1.55,-8.82,{shadow:false});
-// Bedroom: quilted bedcover, headboard upholstery, folded blanket, lamps.
-rounded(2.98,.19,1.5,.14,mat.pink,-5,F+1.03,4.5);
-rounded(2.95,.08,.57,.08,velvet,-5,F+1.15,5.15);
-for(const x of [-5.85,-4.15])rounded(.8,.15,.46,.15,mat.cream,x,F+1.13,3.25);
-for(const x of [-7.3,-2.7]){rounded(.66,.1,.55,.08,mat.wood,x,F+.75,3.45);cylinder(.14,.17,.27,brass,x,F+1.01,3.45);sphere(.22,mat.cream,x,F+1.25,3.45)}
-// Bookcase: shelves, book spines of varied heights, and plant pots.
-for(let level=0;level<2;level++)for(let j=0;j<10;j++){
- const h=.36+(j%4)*.055;cube(.085,h,.31,M(['#c66f5d','#5d8497','#e7bb71','#809b77'][j%4]),2.25+j*.13,F+.55+level*.63+h/2,-7.75);
-}
-// Dining chairs with rounded seats and thin legs.
-for(const [x,z] of [[3.2,-3.3],[5.25,-3.3],[3.2,-6.6],[5.25,-6.6]]){
- rounded(.64,.13,.66,.11,mat.wood,x,.57,z);
- rounded(.64,.8,.11,.065,velvet,x,1.04,z-.29);
- for(const a of [-.23,.23])for(const b of [-.23,.23])cylinder(.035,.04,.49,mat.brown,x+a,.25,z+b);
-}
-// Ceramic vases and picture frames add shape and visual variety.
-for(const [x,z,y] of [[-9.1,7.8,.6],[3.8,7.8,.6],[-7.4,-6.8,1.18],[-7,7.7,F+.75]]){
- cylinder(.15,.09,.3,mat.cream,x,y+.15,z);sphere(.16,mat.pink,x,y+.36,z,house,.85,.75,.85);
-}
-// Meals and places to rest.
-const meals=[];function meal(x,z,y){const plate=cylinder(.38,.4,.08,mat.white,x,y,z);const fish=sphere(.2,M('#8ab5c1'),x,y+.13,z,house,1.45,.42,.6);meals.push({x,z,y,fish,used:false});}meal(-5,-5,1.52);meal(4.4,-5,1.52);meal(-5,1.5,1.52);meal(-5,4,F+1.15);
-// Kitty model
-const cat=new THREE.Group();scene.add(cat);const body=sphere(.45,mat.orange,0,.58,-.1,cat,1.2,.82,.85);sphere(.42,mat.orange,0,1.04,.31,cat,1,1,.96);for(const s of [-1,1]){const ear=new THREE.Mesh(new THREE.ConeGeometry(.18,.35,3),mat.orange);ear.position.set(s*.27,1.46,.27);ear.rotation.z=-s*.16;cat.add(ear);const inner=new THREE.Mesh(new THREE.ConeGeometry(.095,.2,3),mat.pink);inner.position.set(s*.27,1.47,.35);cat.add(inner);sphere(.085,mat.black,s*.17,1.1,.67,cat,1,1,.55);sphere(.025,mat.white,s*.145,1.14,.725,cat)}sphere(.11,mat.cream,0,.89,.68,cat,1.6,.8,.6);sphere(.065,mat.pink,0,1,.78,cat,1,.65,.7);const legs=[];for(const x of [-.3,.3])for(const z of [-.3,.28])legs.push(sphere(.17,mat.orange,x,.24,z,cat,.8,1.15,.85));// Soft muzzle, whiskers, eyebrows, stripes, collar and bell.
-for(const side of [-1,1]){sphere(.14,mat.cream,side*.12,.95,.665,cat,1.1,.7,.5);for(let j=0;j<3;j++){const whisker=new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,.39,5),mat.dark);whisker.position.set(side*.37,.91+j*.06,.72);whisker.rotation.z=side*(.3+(j-1)*.23);cat.add(whisker)}}
-for(let i=0;i<3;i++)sphere(.035,mat.brown,0,1.29-i*.095,.69-i*.012,cat,2,.3,.5);
-const collar=new THREE.Mesh(new THREE.TorusGeometry(.32,.042,7,24),M('#d74d5b'));collar.rotation.x=Math.PI/2;collar.position.set(0,.78,.25);cat.add(collar);sphere(.085,M('#ffd369'),0,.68,.55,cat);
-for(const side of [-1,1])for(let i=0;i<2;i++)sphere(.09,mat.brown,side*.41,.6,-.25+i*.24,cat,.25,.7,.45);
-const tail=new THREE.Group();tail.position.set(0,.7,-.49);cat.add(tail);for(let i=0;i<5;i++)sphere(.11-i*.007,mat.orange,0,i*.16,-i*.16,tail);
-// Fur patches, glossy eyes, toes, and a soft muzzle.
-const iris=M('#6fae79'),nose=M('#a95c65');
-for(const side of [-1,1]){
- sphere(.052,iris,side*.17,1.095,.721,cat,.8,1,.45);
- sphere(.024,mat.black,side*.17,1.095,.75,cat,.7,1,.5);
- sphere(.016,mat.white,side*.155,1.125,.77,cat);
- sphere(.075,mat.cream,side*.32,.2,.28,cat,1.4,.4,1.15);
-}
-sphere(.045,nose,0,.99,.815,cat,1.2,.6,.65);
-cat.position.set(-6,0,6);const radius=.36;let velY=0,grounded=true,score=0,count=0,playing=false,elapsed=0,camAngle=0,camPitch=.4,hunger=85,energy=90,alertness=0,ownerTimer=0,ownerTarget=0,questIndex=0,sleeping=0;const keys={},input={x:0,y:0},clock=new THREE.Clock();const scoreEl=document.querySelector('#score'),countEl=document.querySelector('#count'),roomEl=document.querySelector('#room'),msgEl=document.querySelector('#msg');let toastUntil=0;let camOrbit=0,camFollow=0,camZoom=4.2,saveTimer=0,playTime=0,mood=85,televisionOn=false,fridgeOpen=false;
-// WebAudio synthesizer — footsteps, purrs, meows, crashes and warning sounds.
-let audio=null;function sound(type){if(!audio)return;const t=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);const cfg={meow:[480,250,.32,'sawtooth'],jump:[310,560,.14,'sine'],hit:[190,55,.21,'triangle'],scratch:[260,90,.17,'sawtooth'],tear:[750,190,.23,'triangle'],eat:[450,300,.14,'sine'],sleep:[115,85,.42,'sine'],alert:[650,850,.24,'square'],step:[125,85,.055,'triangle']};const [a,b,d,w]=cfg[type]||cfg.hit;o.type=w;o.frequency.setValueAtTime(a,t);o.frequency.exponentialRampToValueAtTime(b,t+d);g.gain.setValueAtTime(type==='step'?.025:.095,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.start(t);o.stop(t+d+.02)}
-// Animated human with a round head, limbs and shirt.
-const owner=new THREE.Group();scene.add(owner);const skin=M('#efc19b'),shirt=M('#5f8cbb'),pants=M('#42516a');sphere(.32,skin,0,1.7,0,owner);sphere(.085,mat.brown,0,1.83,.3,owner);cube(.7,.82,.38,shirt,0,1.06,0,{parent:owner});const ownerLimbs=[];for(const side of [-1,1]){const arm=cylinder(.105,.12,.74,shirt,side*.48,1.06,0,{parent:owner});ownerLimbs.push(arm);const leg=cylinder(.15,.13,.85,pants,side*.19,.44,0,{parent:owner});ownerLimbs.push(leg)}sphere(.34,M('#49372f'),0,1.91,-.07,owner,1.06,.38,1.04);
-for(const side of [-1,1]){sphere(.038,mat.dark,side*.12,1.74,.296,owner);sphere(.06,skin,side*.32,1.7,0,owner)}
-owner.position.set(3,0,6);const ownerWaypoints=[[3,6],[3,2],[4,-3],[8,-6],[4,-3],[3,2]];
-// Interactive home: hinged doors, animated fridge, television, a second pet and local saves.
-const doors=[];
-function addDoor(x,z,y=0){const pivot=new THREE.Group();pivot.position.set(x-.65,y,z);house.add(pivot);const leaf=cube(1.3,2.2,.11,mat.wood,.65,1.1,0,{parent:pivot});sphere(.055,mat.cream,1.15,1.1,.11,pivot);doors.push({pivot,x,z,y,open:false,leaf});}
-addDoor(-1,0);addDoor(7,0);addDoor(-1,F);addDoor(7,F);
-const fridge=new THREE.Group();fridge.position.set(-8.8,0,-3.2);house.add(fridge);cube(1.3,2.15,1.1,mat.white,0,1.08,0,{parent:fridge,solid:false});const fridgeDoor=new THREE.Group();fridgeDoor.position.set(-.64,0,.57);fridge.add(fridgeDoor);cube(1.24,1.93,.09,mat.cream,.62,1.09,0,{parent:fridgeDoor});cube(.055,.44,.1,mat.dark,1.08,1.15,.1,{parent:fridgeDoor});
-const tvScreen=cube(1.8,1.05,.09,M('#182336'),-5.5,1.65,8.65,{shadow:false});const tvGlow=new THREE.PointLight('#72bbff',0,5);tvGlow.position.set(-5.5,1.7,7.9);scene.add(tvGlow);
-const buddy=new THREE.Group();scene.add(buddy);const buddyFur=M('#d6d4cd');sphere(.34,buddyFur,0,.43,-.1,buddy,1.3,.75,.85);sphere(.33,buddyFur,0,.79,.27,buddy);for(const sign of [-1,1]){const ear=new THREE.Mesh(new THREE.ConeGeometry(.14,.28,3),buddyFur);ear.position.set(sign*.21,1.13,.29);buddy.add(ear);sphere(.06,mat.black,sign*.14,.85,.53,buddy)}for(const x of [-.23,.23])for(const z of [-.3,.26])sphere(.12,buddyFur,x,.17,z,buddy);buddy.position.set(-7,0,-2);let buddyPhase=0;
-function near(x,z,y,range=2){return Math.hypot(cat.position.x-x,cat.position.z-z)<range&&Math.abs(cat.position.y-y)<1.7}
-function toggleDoor(){let nearest=null,d=2.1;for(const door of doors){const n=Math.hypot(cat.position.x-door.x,cat.position.z-door.z);if(n<d&&Math.abs(cat.position.y-door.y)<1.7){nearest=door;d=n}}if(!nearest){toast('🚪 Подойди к двери');return}nearest.open=!nearest.open;sound('hit');toast(nearest.open?'🚪 Дверь открыта':'🚪 Дверь закрыта')}
-function toggleFridge(){if(!near(-8.8,-3.2,0,2.3)){toast('🧊 Холодильник на кухне');return}fridgeOpen=!fridgeOpen;sound('hit');if(fridgeOpen){hunger=Math.min(100,hunger+18);score+=2;scoreEl.textContent=score;toast('🧊 Стащил вкусняшку! +2 🐟')}else toast('🧊 Закрыл холодильник')}
-function toggleTV(){if(!near(-5.5,8.1,0,3)){toast('📺 Телевизор в гостиной');return}televisionOn=!televisionOn;tvGlow.intensity=televisionOn?1.8:0;tvScreen.material=M(televisionOn?'#61bce0':'#182336');sound('meow');toast(televisionOn?'📺 Кошачий канал включён!':'📺 Телевизор выключен')}
-function useThing(){let nearest=null,dist=2.5;for(const [x,z,y,fn] of [[-8.8,-3.2,0,toggleFridge],[-5.5,8.1,0,toggleTV],...doors.map(d=>[d.x,d.z,d.y,toggleDoor])]){const dd=Math.hypot(cat.position.x-x,cat.position.z-z);if(dd<dist&&Math.abs(cat.position.y-y)<1.7){nearest=fn;dist=dd}}if(nearest)nearest();else toast('🐾 Подойди к двери, холодильнику или телевизору')}
-function saveGame(notify=false){try{localStorage.setItem('badcat3d-v04',JSON.stringify({score,count,hunger,energy,mood,questIndex,ate,scratched,slept,escaped,cat:[cat.position.x,cat.position.y,cat.position.z]}));if(notify)toast('💾 Прогресс сохранён')}catch(e){if(notify)toast('Не удалось сохранить')}}
-function loadGame(){try{const v=JSON.parse(localStorage.getItem('badcat3d-v04')||'null');if(!v)return;score=v.score||0;count=v.count||0;hunger=v.hunger??85;energy=v.energy??90;mood=v.mood??85;questIndex=v.questIndex||0;ate=!!v.ate;scratched=!!v.scratched;slept=!!v.slept;escaped=!!v.escaped;scoreEl.textContent=score;countEl.textContent=count;if(Array.isArray(v.cat)&&v.cat.length===3&&v.cat.every(Number.isFinite))cat.position.set(...v.cat);toast('💾 Прогресс восстановлен')}catch(e){}}
-loadGame();
-const questNames=['Сделай 3 шалости','Укради рыбку со стола','Поцарапай мебель','Убеги от хозяина','Поспи на кровати','Устрой 10 шалостей'];let escaped=false,ate=false,scratched=false,slept=false;
-function updateQuest(){const done=[count>=3,ate,scratched,escaped,slept,count>=10];while(questIndex<done.length&&done[questIndex]){score+=5;scoreEl.textContent=score;toast('🎉 Задание выполнено! +5 🐟');questIndex++}document.querySelector('#questText').textContent=questNames[questIndex]||'Все задания выполнены! 🏆'}
-function toast(s){msgEl.textContent=s;msgEl.style.opacity=1;toastUntil=elapsed+1.6}
-function collide(x,z,y){if(x<-10.55+radius||x>10.55-radius||z<-8.55+radius||z>8.55-radius)return true;for(const b of colliders){if(y+.12<b.y2&&y+1.05>b.y1&&x+radius>b.x1&&x-radius<b.x2&&z+radius>b.z1&&z-radius<b.z2)return true}return false}
-function support(x,z,feet,prevFeet){let best=-1e3;for(const s of surfaces){if(x+radius*.5>s.x1&&x-radius*.5<s.x2&&z+radius*.5>s.z1&&z-radius*.5<s.z2&&s.y<=Math.max(prevFeet,feet)+.18&&s.y>best)best=s.y}return best}
-function jump(){if(playing&&grounded){velY=6.7;grounded=false;sound('jump')}}
-function action(kind){if(!playing)return;let closest=null,best=2.0;for(const it of interactables){if(it.used)continue;if(kind!=='knock'&&it.kind!==kind)continue;const dist=Math.hypot(cat.position.x-it.mesh.position.x,cat.position.z-it.mesh.position.z);const height=Math.abs(cat.position.y+.75-it.mesh.position.y);if(dist<best&&height<1.7){closest=it;best=dist}}if(!closest){toast(kind==='scratch'?'Подойди к мебели 🐾':kind==='tear'?'Найди бумагу или ткань 🧻':'Подойди к предмету 💥');return}hit(closest,kind)}
-function hit(it,kind){if(it.used)return;it.used=true;count++;alertness=Math.min(100,alertness+16);score+=kind==='scratch'?3:kind==='tear'?2:1;mood=Math.min(100,mood+4);scoreEl.textContent=score;countEl.textContent=count;const dir=new THREE.Vector3(it.mesh.position.x-cat.position.x,0,it.mesh.position.z-cat.position.z).normalize();it.vx=dir.x*2.4;it.vz=dir.z*2.4;it.vy=kind==='knock'?3.2:0;sound(kind==='knock'?'hit':kind);if(kind==='scratch'){scratched=true;it.mesh.material=M('#a66b72');it.mesh.rotation.z=.12}else if(kind==='tear'){it.mesh.scale.set(.8,.45,1);it.mesh.rotation.z=.35}else{it.mesh.rotation.z=.18}toast((kind==='scratch'?'🐾 Поцарапал: ':kind==='tear'?'🧻 Разорвал: ':'💥 Сбил: ')+it.name+'  +'+(kind==='scratch'?3:kind==='tear'?2:1)+' 🐟')}
-function autoKnock(){for(const it of interactables){if(it.used||it.kind==='scratch'||it.kind==='tear')continue;const dist=Math.hypot(cat.position.x-it.mesh.position.x,cat.position.z-it.mesh.position.z);if(dist<.68&&Math.abs(cat.position.y+.55-it.mesh.position.y)<.65){hit(it,'knock');break}}}
-function eat(){if(!playing)return;const m=meals.find(m=>!m.used&&Math.hypot(cat.position.x-m.x,cat.position.z-m.z)<1.7&&Math.abs(cat.position.y+.75-m.y)<1.6);if(!m){toast('🐟 Найди рыбу на столе!');return}m.used=true;m.fish.visible=false;hunger=Math.min(100,hunger+35);mood=Math.min(100,mood+8);score+=4;scoreEl.textContent=score;ate=true;sound('eat');toast('🐟 Вкуснятина! +4 рыбки');updateQuest()}
-function sleep(){if(!playing)return;const close=Math.hypot(cat.position.x+5,cat.position.z-4)<2.5&&cat.position.y>F-.3;if(!close){toast('💤 Найди кровать наверху!');return}sleeping=4;energy=100;mood=Math.min(100,mood+15);slept=true;sound('sleep');toast('💤 Мурр... котик отдыхает');updateQuest()}
-function meow(){if(!playing)return;sound('meow');toast('МЯЯЯУ! 😺');if(Math.hypot(cat.position.x-owner.position.x,cat.position.z-owner.position.z)<5)alertness=Math.min(100,alertness+22)}
-const binds=[['jump',jump],['swat',()=>action('knock')],['scratch',()=>action('scratch')],['tear',()=>action('tear')],['eat',eat],['sleep',sleep],['meow',meow],['use',useThing]];for(const [id,fn] of binds)document.getElementById(id).addEventListener('pointerdown',e=>{e.preventDefault();fn()});
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(!keys[k]){if(e.code==='Space')jump();if(k==='e')action('knock');if(k==='f')action('scratch');if(k==='r')action('tear');if(k==='g')eat();if(k==='h')sleep();if(k==='m')meow();if(k==='q'){camOrbit=0;camPitch=.18}if(k==='t')toggleTV();if(k==='c')toggleFridge();if(k==='o')toggleDoor();if(k==='p')saveGame(true)}keys[k]=true});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
-const joy=document.querySelector('#joy'),nub=document.querySelector('#nub');let joyId=null;function joyMove(e){const r=joy.getBoundingClientRect(),x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2,l=Math.hypot(x,y)||1,k=Math.min(1,43/l);input.x=x*k/43;input.y=-y*k/43;nub.style.transform=`translate(${input.x*43}px,${-input.y*43}px)`}joy.addEventListener('pointerdown',e=>{joyId=e.pointerId;joy.setPointerCapture(joyId);joyMove(e)});joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyMove(e)});for(const evt of ['pointerup','pointercancel'])joy.addEventListener(evt,e=>{if(e.pointerId===joyId){joyId=null;input.x=input.y=0;nub.style.transform=''}});
-let drag=false,prevX=0,prevY=0;renderer.domElement.addEventListener('pointerdown',e=>{drag=true;prevX=e.clientX;prevY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});renderer.domElement.addEventListener('pointermove',e=>{if(!drag)return;camOrbit-=(e.clientX-prevX)*.005;camPitch=THREE.MathUtils.clamp(camPitch+(e.clientY-prevY)*.003,-.28,.3);prevX=e.clientX;prevY=e.clientY});renderer.domElement.addEventListener('pointerup',()=>drag=false);renderer.domElement.addEventListener('pointercancel',()=>drag=false);
-document.querySelector('#play').onclick=()=>{try{audio=new (window.AudioContext||window.webkitAudioContext)();audio.resume()}catch(e){}playing=true;document.querySelector('#start').style.display='none';toast('Исследуй дом и устраивай шалости! 🐱')};document.querySelector('#reset').onclick=()=>{try{localStorage.removeItem('badcat3d-v04')}catch(e){}location.reload()};
-function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.038);elapsed+=dt;if(playing){playTime+=dt;saveTimer+=dt;if(saveTimer>12){saveTimer=0;saveGame()}
-// Human AI: follows a patrol route, reacts to noise and chases the cat on the ground floor.
-ownerTimer+=dt;const dOwner=Math.hypot(cat.position.x-owner.position.x,cat.position.z-owner.position.z);const catOnGround=cat.position.y<1.9;const spotted=catOnGround&&dOwner<3.4&&alertness>15;
-if(spotted){alertness=Math.min(100,alertness+dt*25);ownerTarget=ownerTarget}else alertness=Math.max(0,alertness-dt*4);
-let goal=ownerWaypoints[ownerTarget];if(alertness>55&&catOnGround)goal=[cat.position.x,cat.position.z];let ox=goal[0]-owner.position.x,oz=goal[1]-owner.position.z,od=Math.hypot(ox,oz);if(od<.5&&alertness<=55)ownerTarget=(ownerTarget+1)%ownerWaypoints.length;else if(od>.1){const sp=alertness>55?2.25:1.05;owner.position.x+=ox/od*sp*dt;owner.position.z+=oz/od*sp*dt;owner.rotation.y=Math.atan2(ox,oz)}ownerLimbs.forEach((l,i)=>l.rotation.x=Math.sin(elapsed*5+i*Math.PI)*.18);
-if(alertness>55&&dOwner<1.1&&catOnGround){score=Math.max(0,score-3);scoreEl.textContent=score;alertness=0;cat.position.set(-6,0,6);velY=0;toast('😾 Хозяин поймал! −3 🐟');sound('alert')}
-if(alertness>30&&dOwner>6){escaped=true;updateQuest()}
-if(sleeping>0){sleeping-=dt;energy=Math.min(100,energy+dt*12)}else{hunger=Math.max(0,hunger-dt*.18);energy=Math.max(0,energy-dt*.10)}
-mood=THREE.MathUtils.clamp(mood+dt*(hunger>30&&energy>25?.12:-.65),0,100);document.querySelector('#moodValue').textContent=mood>65?'Довольный 😺':mood>30?'Скучает 😿':'Грустный 🙀';document.querySelector('#hunger').textContent=Math.round(hunger);document.querySelector('#energy').textContent=Math.round(energy);document.querySelector('#alert').textContent=alertness>55?'ПОГОНЯ!':alertness>15?'Подозревает':'Спокойно';
-let dx=input.x+Number(!!(keys.d||keys.arrowright))-Number(!!(keys.a||keys.arrowleft)),dz=input.y+Number(!!(keys.w||keys.arrowup))-Number(!!(keys.s||keys.arrowdown));const len=Math.hypot(dx,dz);if(len>.12){dx/=Math.max(1,len);dz/=Math.max(1,len);const wx=dx*Math.cos(camOrbit)+dz*Math.sin(camOrbit),wz=dz*Math.cos(camOrbit)-dx*Math.sin(camOrbit),speed=(keys.shift?5.5:3.7)*(energy<15?.65:1)*(sleeping>0?.15:1);const nx=cat.position.x+wx*speed*dt,nz=cat.position.z+wz*speed*dt;if(!collide(nx,cat.position.z,cat.position.y))cat.position.x=nx;if(!collide(cat.position.x,nz,cat.position.y))cat.position.z=nz;cat.rotation.y=Math.atan2(wx,wz);legs.forEach((l,i)=>l.position.y=.24+Math.sin(elapsed*speed*4+i*Math.PI)*.065)}else legs.forEach(l=>l.position.y=.24);
-// Gentle automatic stair stepping, without snagging on risers.
-const onStairs=cat.position.x>6.75&&cat.position.x<9.45&&cat.position.z>1.0&&cat.position.z<8.1;
-if(onStairs&&velY<=0){const stairHeight=THREE.MathUtils.clamp((8.05-cat.position.z)/(.47*14)*F,0,F);if(Math.abs(cat.position.y-stairHeight)<.65){cat.position.y=stairHeight;velY=0;grounded=true}}
-const previous=cat.position.y;velY-=16*dt;cat.position.y+=velY*dt;const stairRamp=THREE.MathUtils.clamp((8.05-cat.position.z)/(.47*14)*F,0,F);const ground=onStairs&&cat.position.y>=stairRamp-.8?Math.max(0,support(cat.position.x,cat.position.z,cat.position.y,previous),stairRamp):Math.max(0,support(cat.position.x,cat.position.z,cat.position.y,previous));if(velY<=0&&ground>-100&&cat.position.y<=ground+.06&&previous>=ground-.2){cat.position.y=ground;velY=0;grounded=true}else grounded=false;
-if(cat.position.y<-.3){cat.position.set(-6,0,6);velY=0;toast('Котик вернулся домой!')}for(const d of doors)d.pivot.rotation.y=THREE.MathUtils.lerp(d.pivot.rotation.y,d.open?-1.3:0,Math.min(1,dt*5));fridgeDoor.rotation.y=THREE.MathUtils.lerp(fridgeDoor.rotation.y,fridgeOpen?-1.6:0,Math.min(1,dt*5));buddyPhase+=dt;buddy.position.x=-7+Math.sin(buddyPhase*.45)*1.1;buddy.position.z=-2+Math.cos(buddyPhase*.45)*1.2;buddy.rotation.y=buddyPhase*.45;tail.rotation.z=Math.sin(elapsed*3)*.23;tail.rotation.x=Math.sin(elapsed*4)*.18;autoKnock();updateQuest();for(const it of interactables){if(!it.used||it.kind==='scratch'||it.kind==='tear')continue;it.vy-=13*dt;it.mesh.position.x+=it.vx*dt;it.mesh.position.z+=it.vz*dt;it.mesh.position.y+=it.vy*dt;const floor=support(it.mesh.position.x,it.mesh.position.z,it.mesh.position.y-.2,it.mesh.position.y+.3);if(floor>-100&&it.mesh.position.y<floor+.23){it.mesh.position.y=floor+.23;it.vy=Math.abs(it.vy)>.6?-it.vy*.2:0;it.vx*=.93;it.vz*=.93}}
-const second=cat.position.y>F-1.1;let name=second?'2 этаж · ':'1 этаж · ';name+=cat.position.x<0?(cat.position.z<0?(second?'Ванная':'Кухня'):(second?'Спальня':'Гостиная')):(cat.position.z<0?(second?'Кабинет':'Столовая'):(second?'Игровая':'Холл'));roomEl.textContent='🏠 '+name;
-}if(elapsed>toastUntil)msgEl.style.opacity=0;
-// Stable third-person camera: only the player rotates the view; movement never spins it.
-// Dragging mouse/finger changes camera yaw, and W / joystick forward follows that yaw.
-const ang=camOrbit,dist=camZoom,firstFloor=cat.position.y<F-1.0;
-const maxCamY=firstFloor?F-.48:F+3.05;
-const target=new THREE.Vector3(cat.position.x,cat.position.y+.8,cat.position.z);
-const desired=new THREE.Vector3(cat.position.x-Math.sin(ang)*dist,
- Math.min(maxCamY,cat.position.y+1.65+dist*Math.sin(camPitch)*.38),
- cat.position.z-Math.cos(ang)*dist);
-// Do not raycast the ceiling or upper-floor furniture: these previously yanked the view upward.
-// Keep the camera below the upper floor while the cat is downstairs.
-const delta=desired.clone().sub(target);
-const ray=new THREE.Raycaster(target,delta.clone().normalize(),.2,delta.length());
-const hits=ray.intersectObjects(house.children,false).filter(h=>h.object.geometry?.type==='BoxGeometry'&&h.distance>.75&&h.point.y<maxCamY-.05);
-if(hits.length)desired.copy(target).addScaledVector(delta.normalize(),Math.max(.9,hits[0].distance-.25));
-desired.y=Math.min(desired.y,maxCamY);
-camera.position.lerp(desired,Math.min(1,dt*12));camera.position.y=Math.min(camera.position.y,maxCamY);camera.lookAt(target);
-renderer.render(scene,camera)}animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
-</script></body></html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <title>Bad Cat 3D — Большой дом</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            overscroll-behavior: none
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #a9d5e9;
+            font: 600 15px system-ui, sans-serif;
+            touch-action: none
+        }
+
+        canvas {
+            display: block;
+            touch-action: none;
+            -webkit-user-select: none
+        }
+
+        #joy,
+        #nub,
+        #actions,
+        #actions button {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            touch-action: none
+        }
+
+        button {
+            font: 800 14px system-ui;
+            cursor: pointer;
+            touch-action: none;
+            border: 0
+        }
+
+        #hud {
+            position: absolute;
+            left: 14px;
+            top: 12px;
+            color: white;
+            text-shadow: 0 2px 5px #584c55;
+            pointer-events: none
+        }
+
+        #hud strong {
+            font-size: 25px
+        }
+
+        #room {
+            font-size: 13px
+        }
+
+        #msg {
+            position: absolute;
+            top: 88px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            text-shadow: 0 2px 4px #555;
+            font-size: 19px;
+            font-weight: 900;
+            text-align: center;
+            pointer-events: none;
+            transition: opacity .3s;
+            opacity: 0;
+            min-width: 220px
+        }
+
+        #help {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #fff9;
+            padding: 9px;
+            border-radius: 12px;
+            color: #574657;
+            font-size: 12px;
+            max-width: 240px
+        }
+
+        #joy {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            width: 122px;
+            height: 122px;
+            border: 3px solid #fff9;
+            background: #fff5;
+            border-radius: 50%;
+            touch-action: none
+        }
+
+        #nub {
+            position: absolute;
+            left: 38px;
+            top: 38px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fffb;
+            box-shadow: 0 2px 8px #0003
+        }
+
+        #actions {
+            position: absolute;
+            bottom: 22px;
+            right: 18px;
+            display: grid;
+            grid-template-columns: repeat(3, 73px);
+            gap: 7px
+        }
+
+        #actions button {
+            height: 65px;
+            border-radius: 22px;
+            color: white;
+            text-shadow: 0 1px 2px #0004;
+            box-shadow: 0 4px 0 #0002
+        }
+
+        #jump {
+            background: #f6a35e
+        }
+
+        #swat {
+            background: #e97684
+        }
+
+        #scratch {
+            background: #9270d6
+        }
+
+        #tear {
+            background: #59b5a8
+        }
+
+        #eat {
+            background: #d4a64f
+        }
+
+        #sleep {
+            background: #6989bf
+        }
+
+        #meow {
+            background: #bc78b9
+        }
+
+        #start {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #322b3ec9;
+            padding: 20px;
+            color: #453b4c;
+            text-align: center
+        }
+
+        #panel {
+            max-width: 480px;
+            background: #fff9f3;
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 20px 55px #0005
+        }
+
+        #panel h1 {
+            margin: 0 0 8px;
+            font-size: 31px
+        }
+
+        #panel p {
+            line-height: 1.5
+        }
+
+        #play {
+            padding: 15px 38px;
+            background: #fa9467;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 20px
+        }
+
+        #reset {
+            position: absolute;
+            top: 65px;
+            right: 12px;
+            background: #fff9;
+            padding: 7px 12px;
+            border-radius: 10px
+        }
+
+        #minimap {
+            position: absolute;
+            bottom: 170px;
+            left: 20px;
+            background: #ffffffaa;
+            border-radius: 12px;
+            padding: 7px;
+            font-size: 12px;
+            color: #52455a
+        }
+
+        @media(max-width:650px) {
+            #help {
+                display: none
+            }
+
+            #minimap {
+                display: none
+            }
+
+            #actions {
+                grid-template-columns: repeat(3, 58px)
+            }
+
+            #actions button {
+                height: 56px;
+                font-size: 10px
+            }
+
+            #joy {
+                width: 112px;
+                height: 112px
+            }
+
+            #nub {
+                left: 33px;
+                top: 33px
+            }
+
+            #hud strong {
+                font-size: 21px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="hud"><strong>🐟 <span id="score">0</span></strong>
+        <div id="room">🏠 Гостиная · 1 этаж</div>
+        <div id="tasks">💥 Шалости: <span id="count">0</span></div>
+        <div id="needs">🍗 <span id="hunger">85</span>% · ⚡ <span id="energy">90</span>% · 👀 <span
+                id="alert">Спокойно</span></div>
+        <div id="mood">😺 Настроение: <span id="moodValue">Довольный</span></div>
+        <div id="quest">🎯 <span id="questText">Сделай 3 шалости</span></div>
+    </div>
+    <div id="help">⌨️ WASD / стрелки — идти · Shift — бег<br>Пробел — прыгать · E — толкнуть<br>F — царапать · R —
+        рвать<br>G — есть/воровать · H — спать · M — мяукать<br>Мышь / свайп — повернуть направление · Q — сброс
+        камеры<br>T — телевизор · C — холодильник · O — двери · P — сохранение</div><button id="reset">↻ Заново</button>
+    <div id="msg"></div>
+    <div id="minimap">🏠 Два этажа · лестница справа<br>🛋️ Гостиная · 🍳 Кухня · 🛏️ Спальня<br>🛁 Ванная · 🎮 Игровая
+        · 📚 Кабинет</div>
+    <div id="joy">
+        <div id="nub"></div>
+    </div>
+    <div id="actions"><button id="jump">🐾<br>ПРЫГ</button><button id="swat">💥<br>ТОЛКНИ</button><button
+            id="scratch">🐈<br>ЦАРАПАЙ</button><button id="tear">🧻<br>РВИ</button><button
+            id="eat">🐟<br>ЕШЬ</button><button id="sleep">💤<br>СПАТЬ</button><button
+            id="meow">🔊<br>МЯУ</button><button id="use" style="background:#4b9a8a">🚪<br>ДЕЙСТВИЕ</button></div>
+    <div id="start">
+        <div id="panel">
+            <h1>🐱 Bad Cat 3D</h1>
+            <h2>Кошачий симулятор — версия 0.5 · Уютный особняк</h2>
+            <p>Живой двухэтажный дом! Хозяин патрулирует комнаты и реагирует на шалости. Прячься, воруй рыбу, ешь, спи,
+                мяукай и выполняй задания. Включи звук!</p>
+            <p>⌨️ WASD, Shift, Пробел, E, F, R, G, H, M<br>📱 Джойстик и кнопки · T/C/O/P — дом и сохранения</p><button
+                id="play">Играть! 🐾</button>
+        </div>
+    </div>
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
+        const scene = new THREE.Scene(); scene.background = new THREE.Color('#aed9ed'); scene.fog = new THREE.Fog('#aed9ed', 42, 95);
+        const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, .1, 110), renderer = new THREE.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8)); renderer.setSize(innerWidth, innerHeight); renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15; document.body.prepend(renderer.domElement);
+        scene.add(new THREE.HemisphereLight(0xffffff, 0x8891ae, 2.15)); const sun = new THREE.DirectionalLight(0xfff1dc, 2.6); sun.position.set(-10, 19, 14); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -24; sun.shadow.camera.right = 24; sun.shadow.camera.top = 24; sun.shadow.camera.bottom = -24; scene.add(sun);
+        const M = (c, r = 0.85) => new THREE.MeshStandardMaterial({ color: c, roughness: r }), mat = { wood: M('#c99872'), plank: M('#d6ae85'), wall: M('#f6e9de'), wall2: M('#dbe5eb'), cream: M('#fff5de'), blue: M('#8baccf'), darkBlue: M('#6685ae'), pink: M('#e6a1b2'), green: M('#8dc5a4'), brown: M('#8c5e47'), dark: M('#544453'), glass: new THREE.MeshStandardMaterial({ color: '#b9eaff', transparent: true, opacity: .58, roughness: .12 }), orange: M('#ee974b'), white: M('#ffffff'), black: M('#352f3b'), paper: M('#f5f2e6') };
+        // Canvas-generated wood grain and woven fabric: no downloaded textures required.
+        function texture(type, a, b) { const c = document.createElement('canvas'); c.width = c.height = 256; const ctx = c.getContext('2d'); ctx.fillStyle = a; ctx.fillRect(0, 0, 256, 256); let seed = 17; function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296 } if (type === 'wood') { for (let i = 0; i < 110; i++) { ctx.strokeStyle = b; ctx.globalAlpha = .035 + rnd() * .12; ctx.lineWidth = .5 + rnd() * 2; ctx.beginPath(); const y = rnd() * 256; ctx.moveTo(0, y); ctx.bezierCurveTo(70, y + rnd() * 10, 190, y - rnd() * 10, 256, y); ctx.stroke() } } else { for (let i = 0; i < 256; i += 4) { ctx.globalAlpha = .13; ctx.fillStyle = b; ctx.fillRect(i, 0, 1, 256); ctx.fillRect(0, i, 256, 1) } } ctx.globalAlpha = 1; const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(2, 2); return t }
+        mat.plank.map = texture('wood', '#e4bb93', '#714832'); mat.plank.color.set('#ffffff'); mat.wood.map = texture('wood', '#b47a4f', '#543b31'); mat.wood.color.set('#ffffff'); mat.blue.map = texture('fabric', '#94b1d0', '#4b648c'); mat.blue.color.set('#ffffff'); mat.pink.map = texture('fabric', '#e7a9b6', '#96516c'); mat.pink.color.set('#ffffff');
+        const colliders = [], surfaces = [], interactables = [], decor = []; const house = new THREE.Group(); scene.add(house);
+        function cube(w, h, d, m, x, y, z, opts = {}) { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); o.castShadow = opts.shadow !== false; o.receiveShadow = true; (opts.parent || house).add(o); if (opts.solid) colliders.push({ x1: x - w / 2, x2: x + w / 2, z1: z - d / 2, z2: z + d / 2, y1: y - h / 2, y2: y + h / 2 }); if (opts.top) surfaces.push({ x1: x - w / 2, x2: x + w / 2, z1: z - d / 2, z2: z + d / 2, y: y + h / 2 }); return o }
+        function sphere(r, m, x, y, z, parent = house, sx = 1, sy = 1, sz = 1) { const o = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), m); o.position.set(x, y, z); o.scale.set(sx, sy, sz); o.castShadow = true; parent.add(o); return o }
+        function cylinder(rt, rb, h, m, x, y, z, opts = {}) { const o = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, 12), m); o.position.set(x, y, z); o.castShadow = true; (opts.parent || house).add(o); if (opts.solid) colliders.push({ x1: x - rt, x2: x + rt, z1: z - rt, z2: z + rt, y1: y - h / 2, y2: y + h / 2 }); if (opts.top) surfaces.push({ x1: x - rt, x2: x + rt, z1: z - rt, z2: z + rt, y: y + h / 2 }); return o }
+        const F = 3.55; cube(22, .28, 18, mat.plank, 0, -.14, 0, { top: true }); // ground
+        // upper level: open stairwell at x 6..10, z 1..8
+        cube(16, .25, 18, mat.plank, -3, F - .125, 0, { top: true }); cube(6, .25, 10, mat.plank, 8, F - .125, -4, { top: true });
+        // outer walls: partial heights let camera see inside
+        for (const level of [0, 1]) { const b = level * F; cube(22, 2.7, .24, mat.wall, 0, b + 1.35, -9, { solid: true }); cube(.24, 2.7, 18, mat.wall, -11, b + 1.35, 0, { solid: true }); cube(.24, 2.7, 18, mat.wall, 11, b + 1.35, 0, { solid: true }); cube(22, .55, .22, mat.wall, 0, b + .28, 9, { solid: true }); }
+        // interior dividers with walkable gaps
+        function wallX(x, z1, z2, y, material = mat.wall2) { cube(.18, 2.7, z2 - z1, material, x, y + 1.35, (z1 + z2) / 2, { solid: true }) }
+        function wallZ(z, x1, x2, y, material = mat.wall2) { cube(x2 - x1, 2.7, .18, material, (x1 + x2) / 2, y + 1.35, z, { solid: true }) }
+        for (const y of [0, F]) { wallX(0, -9, -1.4, y); wallX(0, 1.2, 9, y); wallZ(0, -11, -2.2, y); wallZ(0, 1.5, 5.8, y); wallZ(0, 8.2, 11, y) }
+        // staircase, rises from y=0 at x=8, z=7.5 toward z=0
+        const stairN = 14, stepD = .47; for (let i = 0; i < stairN; i++) { const h = F * (i + 1) / stairN, z = 7.8 - i * stepD; cube(2.7, h, stepD + .02, mat.wood, 8.1, h / 2, z, { top: true }) } cube(.18, 1.1, 7.2, mat.cream, 6.65, 1.9, 4.4); // handrail decorative
+        // rugs
+        for (const [x, z, w, d, color, y] of [[-5, 4, 5, 4, '#ead0a7', .02], [-5, -5, 4, 3, '#d4e4f3', .02], [4, -5, 4, 3, '#d7e9bd', .02], [-5, 4, 4, 3, '#f2d2d8', F + .02], [4, -5, 4, 3, '#c8d8ec', F + .02]]) cube(w, .025, d, M(color), x, y, z, { shadow: false });
+        function table(x, z, y = 0, w = 2.4, d = 1.35) { cube(w, .18, d, mat.wood, x, y + 1.08, z, { solid: true, top: true }); for (const sx of [-1, 1]) for (const sz of [-1, 1]) cube(.16, 1, .16, mat.brown, x + sx * (w / 2 - .2), y + .5, z + sz * (d / 2 - .2), { solid: true }) }
+        function sofa(x, z, y = 0) { cube(3.7, .67, 1.45, mat.blue, x, y + .46, z, { solid: true, top: true }); cube(3.7, 1.1, .32, mat.darkBlue, x, y + 1.02, z - .66, { solid: true }); for (const dx of [-1.65, 1.65]) cube(.4, .78, 1.5, mat.darkBlue, x + dx, y + .74, z, { solid: true }); for (const dx of [-.9, .8]) cube(.85, .18, .85, mat.cream, x + dx, y + .89, z + .2, { solid: true, top: true }); }
+        function bed(x, z, y = F) { cube(3.4, .6, 2.8, mat.brown, x, y + .46, z, { solid: true, top: true }); cube(3.15, .23, 2.5, mat.cream, x, y + .85, z, { solid: true, top: true }); cube(3.4, .9, .22, mat.pink, x, y + .9, z - 1.35, { solid: true }); for (const dx of [-.85, .85]) cube(.9, .13, .5, mat.white, x + dx, y + 1.02, z - .85, { solid: true, top: true }) }
+        function cabinet(x, z, y = 0, w = 2.2, h = 1.7) { cube(w, h, .65, mat.brown, x, y + h / 2, z, { solid: true, top: true }); for (let k = 0; k < 3; k++)cube(w - .18, .035, .68, mat.wood, x, y + .45 + k * .48, z + .02); }
+        function plant(x, z, y = 0) { cylinder(.32, .25, .5, mat.brown, x, y + .25, z, { solid: true, top: true }); for (let k = 0; k < 5; k++)sphere(.37, mat.green, x + Math.cos(k * 2.5) * .2, y + .85 + Math.sin(k) * .2, z + Math.sin(k * 2.5) * .2) }
+        function lamp(x, z, y = 0) { cylinder(.15, .18, .1, mat.brown, x, y + .06, z); cylinder(.04, .04, 1.7, mat.brown, x, y + .9, z); const shade = new THREE.Mesh(new THREE.ConeGeometry(.42, .65, 12), mat.cream); shade.rotation.x = Math.PI; shade.position.set(x, y + 1.88, z); house.add(shade) }
+        function window3(x, z, y = 0) { cube(2.7, 1.45, .04, mat.glass, x, y + 1.75, z, { shadow: false }); cube(2.8, .07, .12, mat.white, x, y + 1.75, z + .05); cube(.08, 1.55, .12, mat.white, x, y + 1.75, z + .05) }
+        function item(name, x, y, z, kind = 'knock', color = '#f4a4b4') { const m = M(color); let mesh; if (kind === 'tear') { mesh = cube(.65, .52, .11, mat.paper, x, y, z) } else if (kind === 'scratch') { mesh = cube(.85, .65, .1, mat.pink, x, y, z) } else if (kind === 'knock') { mesh = cylinder(.23, .18, .48, m, x, y, z) } else { mesh = cube(.42, .42, .42, m, x, y, z) } interactables.push({ name, mesh, kind, used: false, vy: 0, vx: 0, vz: 0, baseY: y, damage: 0 }); return mesh }
+        // ground floor: lounge (front-left), kitchen (rear-left), dining (rear-right), hall (front-right)
+        sofa(-5, 4); table(-5, 1.5, 0, 2.3, 1.2); lamp(-9, 6.8); plant(-9, 1); cabinet(-9, 3); item('Ваза', -5, 1.42, 1.5); item('Пульт', -4.4, 1.42, 1.5, 'box', '#3b4b63'); item('Шторы', -8.7, 1.6, 8.5, 'scratch'); item('Диван', -5, 1.2, 4, 'scratch'); item('Журнал', -4.8, .36, 6.4, 'tear');
+        cabinet(-8, -7); table(-5, -5, 0, 2.8, 1.5); item('Тарелка', -5, 1.44, -5); item('Стакан', -4.1, 1.43, -5.1); item('Полотенце', -8, 1.2, -6.6, 'tear'); item('Шкаф', -8, 1.1, -7, 'scratch'); plant(-9, -2);
+        table(4, -5, 0, 3.2, 2); for (const [x, z] of [[2.9, -5], [5.2, -5]]) item('Чашка', x, 1.44, z); cabinet(8.8, -7.6, 0, 2.5, 1.4); item('Кухонный шкаф', 8.8, 1.45, -7.5, 'scratch'); item('Салфетки', 6.4, .4, -6.5, 'tear'); plant(2, -7.5);
+        cabinet(3.3, 6.8, 0, 2.3, 1.2); item('Рулон бумаги', 3.3, 1.48, 6.8, 'tear'); item('Коробка', 2, .28, 3, 'box', '#e7bd82'); item('Обои', .6, 1.1, 4.5, 'scratch');
+        // upper floor
+        bed(-5, 4); cabinet(-9, 6.7, F); item('Подушка', -5, F + 1.23, 4, 'box', '#fff1cc'); item('Плед', -4, F + 1.2, 5, 'tear'); item('Кровать', -6, F + 1.45, 3.7, 'scratch'); plant(-9, 2, F);
+        // bathroom
+        cube(2.8, .65, 1.65, mat.white, -6, F + .5, -5.4, { solid: true, top: true }); cube(1.7, .85, .65, mat.white, -9, F + .43, -7, { solid: true, top: true }); item('Бумага', -5, F + .3, -3.1, 'tear'); item('Зеркало', -10.8, F + 1.8, -5.5, 'scratch');
+        // office
+        const desk = table(4, -5, F, 3, 1.7); cube(.95, .07, .65, mat.black, 4, F + 1.45, -5.5); cube(.15, .45, .1, mat.black, 4, F + 1.25, -5.5); item('Монитор', 4, F + 1.75, -5.5, 'scratch'); item('Блокнот', 5, F + 1.42, -4.5, 'tear'); cabinet(8.5, -7, F, 2.2, 1.7); item('Книги', 8.5, F + 1.95, -7, 'box', '#ad85c6');
+        // game room upper front right
+        cube(2.2, .65, 1.5, mat.green, 3.4, F + .5, 4, { solid: true, top: true }); item('Игрушка', 3.3, F + 1.12, 4); item('Когтеточка', 5.6, F + .8, 6.2, 'scratch'); item('Бумажный пакет', 1.7, F + .35, 6, 'tear'); plant(1.5, 2, F);
+        for (const [x, z, y] of [[-5, -8.8, 0], [4, -8.8, 0], [-5, -8.8, F], [4, -8.8, F]]) window3(x, z, y);
+        // Decor: framed paintings, picture rails, ceiling lights, cushions, plants and kitchen details.
+        for (const [x, z, y] of [[-7, -8.82, 0], [2.7, -8.82, 0], [-7, -8.82, F], [3, -8.82, F]]) { cube(1.65, 1.1, .06, mat.wood, x, y + 1.75, z + .06, { shadow: false }); cube(1.4, .87, .07, M(['#91c4bb', '#e9bc8d', '#b5a6d7'][Math.abs(Math.round(x)) % 3]), x, y + 1.75, z + .12, { shadow: false }); sphere(.19, mat.cream, x + .3, y + 1.88, z + .17, house, 1, 1, .2) }
+        for (const [x, z, y] of [[-5, 3, 0], [-5, -5, 0], [4, -5, 0], [-5, 4, F], [4, -5, F]]) { const light = new THREE.PointLight(0xffe5b9, 1.2, 8, 2); light.position.set(x, y + 2.6, z); scene.add(light); sphere(.18, mat.cream, x, y + 2.55, z) }
+        for (const [x, z, y] of [[-2, 7, 0], [-2, -3, 0], [2, -3, 0], [-2, 7, F], [-2, -3, F]]) { cylinder(.22, .22, .07, mat.wood, x, y + .06, z); sphere(.16, mat.green, x, y + .23, z) }
+        // v0.5: detailed procedural furnishings, all built with rounded geometry and warm materials.
+        const metal = new THREE.MeshStandardMaterial({ color: '#b8a8a0', metalness: .7, roughness: .25 });
+        const velvet = new THREE.MeshStandardMaterial({ color: '#537a87', roughness: .94 });
+        const brass = new THREE.MeshStandardMaterial({ color: '#c6a16a', metalness: .75, roughness: .28 });
+        function rounded(w, h, d, r, material, x, y, z, parent = house) {
+            const shape = new THREE.Shape(), hw = w / 2, hd = d / 2, rr = Math.min(r, hw, hd);
+            shape.moveTo(-hw + rr, -hd); shape.lineTo(hw - rr, -hd); shape.quadraticCurveTo(hw, -hd, hw, -hd + rr);
+            shape.lineTo(hw, hd - rr); shape.quadraticCurveTo(hw, hd, hw - rr, hd); shape.lineTo(-hw + rr, hd);
+            shape.quadraticCurveTo(-hw, hd, -hw, hd - rr); shape.lineTo(-hw, -hd + rr); shape.quadraticCurveTo(-hw, -hd, -hw + rr, -hd);
+            const geo = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: .035, bevelThickness: .035, curveSegments: 5 });
+            geo.rotateX(-Math.PI / 2); const mesh = new THREE.Mesh(geo, material); mesh.position.set(x, y - h / 2, z); mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh;
+        }
+        // Upholstered sofa cushions with piping, wooden feet, and fabric throw.
+        for (const x of [-6.15, -5.25, -4.35]) { rounded(.82, .24, .83, .14, velvet, x, .91, 4.35); rounded(.78, .67, .19, .08, mat.blue, x, 1.22, 3.64) }
+        for (const x of [-6.5, -3.7]) for (const z of [3.72, 4.75]) cylinder(.075, .075, .17, mat.brown, x, .1, z);
+        rounded(.9, .055, .7, .08, mat.pink, -4.25, 1.01, 4.7);
+        // Coffee table: curved top, lower shelf, tapered legs and magazines.
+        rounded(1.75, .12, .93, .17, mat.wood, -5.25, .61, 6.25);
+        rounded(1.42, .07, .69, .12, mat.brown, -5.25, .22, 6.25);
+        for (const x of [-5.95, -4.55]) for (const z of [5.94, 6.56]) cylinder(.055, .08, .51, mat.brown, x, .32, z);
+        rounded(.48, .035, .33, .025, mat.paper, -5.35, .71, 6.23);
+        // Kitchen cabinets, counter handles, backsplash tile seams and sink.
+        for (let i = 0; i < 5; i++) {
+            const x = -9.6 + i * .75; rounded(.69, .8, .63, .055, mat.wood, x, .53, -7.55);
+            rounded(.36, .025, .025, .01, metal, x, .65, -7.19);
+        }
+        rounded(4.1, .15, .83, .12, mat.cream, -8.05, 1.03, -7.55);
+        rounded(.87, .04, .6, .11, metal, -8.55, 1.115, -7.55);
+        rounded(.66, .025, .43, .09, mat.dark, -8.55, 1.14, -7.55);
+        const tap = cylinder(.035, .035, .55, metal, -8.82, 1.4, -7.8); tap.rotation.z = .35;
+        for (let i = 0; i < 7; i++)cube(.015, .38, .02, M('#e1d4ca'), -9.8 + i * .53, 1.55, -8.82, { shadow: false });
+        // Bedroom: quilted bedcover, headboard upholstery, folded blanket, lamps.
+        rounded(2.98, .19, 1.5, .14, mat.pink, -5, F + 1.03, 4.5);
+        rounded(2.95, .08, .57, .08, velvet, -5, F + 1.15, 5.15);
+        for (const x of [-5.85, -4.15]) rounded(.8, .15, .46, .15, mat.cream, x, F + 1.13, 3.25);
+        for (const x of [-7.3, -2.7]) { rounded(.66, .1, .55, .08, mat.wood, x, F + .75, 3.45); cylinder(.14, .17, .27, brass, x, F + 1.01, 3.45); sphere(.22, mat.cream, x, F + 1.25, 3.45) }
+        // Bookcase: shelves, book spines of varied heights, and plant pots.
+        for (let level = 0; level < 2; level++)for (let j = 0; j < 10; j++) {
+            const h = .36 + (j % 4) * .055; cube(.085, h, .31, M(['#c66f5d', '#5d8497', '#e7bb71', '#809b77'][j % 4]), 2.25 + j * .13, F + .55 + level * .63 + h / 2, -7.75);
+        }
+        // Dining chairs with rounded seats and thin legs.
+        for (const [x, z] of [[3.2, -3.3], [5.25, -3.3], [3.2, -6.6], [5.25, -6.6]]) {
+            rounded(.64, .13, .66, .11, mat.wood, x, .57, z);
+            rounded(.64, .8, .11, .065, velvet, x, 1.04, z - .29);
+            for (const a of [-.23, .23]) for (const b of [-.23, .23]) cylinder(.035, .04, .49, mat.brown, x + a, .25, z + b);
+        }
+        // Ceramic vases and picture frames add shape and visual variety.
+        for (const [x, z, y] of [[-9.1, 7.8, .6], [3.8, 7.8, .6], [-7.4, -6.8, 1.18], [-7, 7.7, F + .75]]) {
+            cylinder(.15, .09, .3, mat.cream, x, y + .15, z); sphere(.16, mat.pink, x, y + .36, z, house, .85, .75, .85);
+        }
+        // Meals and places to rest.
+        const meals = []; function meal(x, z, y) { const plate = cylinder(.38, .4, .08, mat.white, x, y, z); const fish = sphere(.2, M('#8ab5c1'), x, y + .13, z, house, 1.45, .42, .6); meals.push({ x, z, y, fish, used: false }); } meal(-5, -5, 1.52); meal(4.4, -5, 1.52); meal(-5, 1.5, 1.52); meal(-5, 4, F + 1.15);
+        // Kitty model
+        const cat = new THREE.Group(); scene.add(cat); const body = sphere(.45, mat.orange, 0, .58, -.1, cat, 1.2, .82, .85); sphere(.42, mat.orange, 0, 1.04, .31, cat, 1, 1, .96); for (const s of [-1, 1]) { const ear = new THREE.Mesh(new THREE.ConeGeometry(.18, .35, 3), mat.orange); ear.position.set(s * .27, 1.46, .27); ear.rotation.z = -s * .16; cat.add(ear); const inner = new THREE.Mesh(new THREE.ConeGeometry(.095, .2, 3), mat.pink); inner.position.set(s * .27, 1.47, .35); cat.add(inner); sphere(.085, mat.black, s * .17, 1.1, .67, cat, 1, 1, .55); sphere(.025, mat.white, s * .145, 1.14, .725, cat) } sphere(.11, mat.cream, 0, .89, .68, cat, 1.6, .8, .6); sphere(.065, mat.pink, 0, 1, .78, cat, 1, .65, .7); const legs = []; for (const x of [-.3, .3]) for (const z of [-.3, .28]) legs.push(sphere(.17, mat.orange, x, .24, z, cat, .8, 1.15, .85));// Soft muzzle, whiskers, eyebrows, stripes, collar and bell.
+        for (const side of [-1, 1]) { sphere(.14, mat.cream, side * .12, .95, .665, cat, 1.1, .7, .5); for (let j = 0; j < 3; j++) { const whisker = new THREE.Mesh(new THREE.CylinderGeometry(.008, .008, .39, 5), mat.dark); whisker.position.set(side * .37, .91 + j * .06, .72); whisker.rotation.z = side * (.3 + (j - 1) * .23); cat.add(whisker) } }
+        for (let i = 0; i < 3; i++)sphere(.035, mat.brown, 0, 1.29 - i * .095, .69 - i * .012, cat, 2, .3, .5);
+        const collar = new THREE.Mesh(new THREE.TorusGeometry(.32, .042, 7, 24), M('#d74d5b')); collar.rotation.x = Math.PI / 2; collar.position.set(0, .78, .25); cat.add(collar); sphere(.085, M('#ffd369'), 0, .68, .55, cat);
+        for (const side of [-1, 1]) for (let i = 0; i < 2; i++)sphere(.09, mat.brown, side * .41, .6, -.25 + i * .24, cat, .25, .7, .45);
+        const tail = new THREE.Group(); tail.position.set(0, .7, -.49); cat.add(tail); for (let i = 0; i < 5; i++)sphere(.11 - i * .007, mat.orange, 0, i * .16, -i * .16, tail);
+        // Fur patches, glossy eyes, toes, and a soft muzzle.
+        const iris = M('#6fae79'), nose = M('#a95c65');
+        for (const side of [-1, 1]) {
+            sphere(.052, iris, side * .17, 1.095, .721, cat, .8, 1, .45);
+            sphere(.024, mat.black, side * .17, 1.095, .75, cat, .7, 1, .5);
+            sphere(.016, mat.white, side * .155, 1.125, .77, cat);
+            sphere(.075, mat.cream, side * .32, .2, .28, cat, 1.4, .4, 1.15);
+        }
+        sphere(.045, nose, 0, .99, .815, cat, 1.2, .6, .65);
+        cat.position.set(-6, 0, 6); const radius = .36; let velY = 0, grounded = true, score = 0, count = 0, playing = false, elapsed = 0, camAngle = 0, camPitch = .4, hunger = 85, energy = 90, alertness = 0, ownerTimer = 0, ownerTarget = 0, questIndex = 0, sleeping = 0; const keys = {}, input = { x: 0, y: 0 }, clock = new THREE.Clock(); const scoreEl = document.querySelector('#score'), countEl = document.querySelector('#count'), roomEl = document.querySelector('#room'), msgEl = document.querySelector('#msg'); let toastUntil = 0; let camOrbit = 0, camFollow = 0, camZoom = 4.2, saveTimer = 0, playTime = 0, mood = 85, televisionOn = false, fridgeOpen = false;
+        // WebAudio synthesizer — footsteps, purrs, meows, crashes and warning sounds.
+        let audio = null; function sound(type) { if (!audio) return; const t = audio.currentTime, o = audio.createOscillator(), g = audio.createGain(); o.connect(g); g.connect(audio.destination); const cfg = { meow: [480, 250, .32, 'sawtooth'], jump: [310, 560, .14, 'sine'], hit: [190, 55, .21, 'triangle'], scratch: [260, 90, .17, 'sawtooth'], tear: [750, 190, .23, 'triangle'], eat: [450, 300, .14, 'sine'], sleep: [115, 85, .42, 'sine'], alert: [650, 850, .24, 'square'], step: [125, 85, .055, 'triangle'] }; const [a, b, d, w] = cfg[type] || cfg.hit; o.type = w; o.frequency.setValueAtTime(a, t); o.frequency.exponentialRampToValueAtTime(b, t + d); g.gain.setValueAtTime(type === 'step' ? .025 : .095, t); g.gain.exponentialRampToValueAtTime(.001, t + d); o.start(t); o.stop(t + d + .02) }
+        // Animated human with a round head, limbs and shirt.
+        const owner = new THREE.Group(); scene.add(owner); const skin = M('#efc19b'), shirt = M('#5f8cbb'), pants = M('#42516a'); sphere(.32, skin, 0, 1.7, 0, owner); sphere(.085, mat.brown, 0, 1.83, .3, owner); cube(.7, .82, .38, shirt, 0, 1.06, 0, { parent: owner }); const ownerLimbs = []; for (const side of [-1, 1]) { const arm = cylinder(.105, .12, .74, shirt, side * .48, 1.06, 0, { parent: owner }); ownerLimbs.push(arm); const leg = cylinder(.15, .13, .85, pants, side * .19, .44, 0, { parent: owner }); ownerLimbs.push(leg) } sphere(.34, M('#49372f'), 0, 1.91, -.07, owner, 1.06, .38, 1.04);
+        for (const side of [-1, 1]) { sphere(.038, mat.dark, side * .12, 1.74, .296, owner); sphere(.06, skin, side * .32, 1.7, 0, owner) }
+        owner.position.set(3, 0, 6); const ownerWaypoints = [[3, 6], [3, 2], [4, -3], [8, -6], [4, -3], [3, 2]];
+        // Interactive home: hinged doors, animated fridge, television, a second pet and local saves.
+        const doors = [];
+        function addDoor(x, z, y = 0) { const pivot = new THREE.Group(); pivot.position.set(x - .65, y, z); house.add(pivot); const leaf = cube(1.3, 2.2, .11, mat.wood, .65, 1.1, 0, { parent: pivot }); sphere(.055, mat.cream, 1.15, 1.1, .11, pivot); doors.push({ pivot, x, z, y, open: false, leaf }); }
+        addDoor(-1, 0); addDoor(7, 0); addDoor(-1, F); addDoor(7, F);
+        const fridge = new THREE.Group(); fridge.position.set(-8.8, 0, -3.2); house.add(fridge); cube(1.3, 2.15, 1.1, mat.white, 0, 1.08, 0, { parent: fridge, solid: false }); const fridgeDoor = new THREE.Group(); fridgeDoor.position.set(-.64, 0, .57); fridge.add(fridgeDoor); cube(1.24, 1.93, .09, mat.cream, .62, 1.09, 0, { parent: fridgeDoor }); cube(.055, .44, .1, mat.dark, 1.08, 1.15, .1, { parent: fridgeDoor });
+        const tvScreen = cube(1.8, 1.05, .09, M('#182336'), -5.5, 1.65, 8.65, { shadow: false }); const tvGlow = new THREE.PointLight('#72bbff', 0, 5); tvGlow.position.set(-5.5, 1.7, 7.9); scene.add(tvGlow);
+        const buddy = new THREE.Group(); scene.add(buddy); const buddyFur = M('#d6d4cd'); sphere(.34, buddyFur, 0, .43, -.1, buddy, 1.3, .75, .85); sphere(.33, buddyFur, 0, .79, .27, buddy); for (const sign of [-1, 1]) { const ear = new THREE.Mesh(new THREE.ConeGeometry(.14, .28, 3), buddyFur); ear.position.set(sign * .21, 1.13, .29); buddy.add(ear); sphere(.06, mat.black, sign * .14, .85, .53, buddy) } for (const x of [-.23, .23]) for (const z of [-.3, .26]) sphere(.12, buddyFur, x, .17, z, buddy); buddy.position.set(-7, 0, -2); let buddyPhase = 0;
+        function near(x, z, y, range = 2) { return Math.hypot(cat.position.x - x, cat.position.z - z) < range && Math.abs(cat.position.y - y) < 1.7 }
+        function toggleDoor() { let nearest = null, d = 2.1; for (const door of doors) { const n = Math.hypot(cat.position.x - door.x, cat.position.z - door.z); if (n < d && Math.abs(cat.position.y - door.y) < 1.7) { nearest = door; d = n } } if (!nearest) { toast('🚪 Подойди к двери'); return } nearest.open = !nearest.open; sound('hit'); toast(nearest.open ? '🚪 Дверь открыта' : '🚪 Дверь закрыта') }
+        function toggleFridge() { if (!near(-8.8, -3.2, 0, 2.3)) { toast('🧊 Холодильник на кухне'); return } fridgeOpen = !fridgeOpen; sound('hit'); if (fridgeOpen) { hunger = Math.min(100, hunger + 18); score += 2; scoreEl.textContent = score; toast('🧊 Стащил вкусняшку! +2 🐟') } else toast('🧊 Закрыл холодильник') }
+        function toggleTV() { if (!near(-5.5, 8.1, 0, 3)) { toast('📺 Телевизор в гостиной'); return } televisionOn = !televisionOn; tvGlow.intensity = televisionOn ? 1.8 : 0; tvScreen.material = M(televisionOn ? '#61bce0' : '#182336'); sound('meow'); toast(televisionOn ? '📺 Кошачий канал включён!' : '📺 Телевизор выключен') }
+        function useThing() { let nearest = null, dist = 2.5; for (const [x, z, y, fn] of [[-8.8, -3.2, 0, toggleFridge], [-5.5, 8.1, 0, toggleTV], ...doors.map(d => [d.x, d.z, d.y, toggleDoor])]) { const dd = Math.hypot(cat.position.x - x, cat.position.z - z); if (dd < dist && Math.abs(cat.position.y - y) < 1.7) { nearest = fn; dist = dd } } if (nearest) nearest(); else toast('🐾 Подойди к двери, холодильнику или телевизору') }
+        function saveGame(notify = false) { try { localStorage.setItem('badcat3d-v04', JSON.stringify({ score, count, hunger, energy, mood, questIndex, ate, scratched, slept, escaped, cat: [cat.position.x, cat.position.y, cat.position.z] })); if (notify) toast('💾 Прогресс сохранён') } catch (e) { if (notify) toast('Не удалось сохранить') } }
+        function loadGame() { try { const v = JSON.parse(localStorage.getItem('badcat3d-v04') || 'null'); if (!v) return; score = v.score || 0; count = v.count || 0; hunger = v.hunger ?? 85; energy = v.energy ?? 90; mood = v.mood ?? 85; questIndex = v.questIndex || 0; ate = !!v.ate; scratched = !!v.scratched; slept = !!v.slept; escaped = !!v.escaped; scoreEl.textContent = score; countEl.textContent = count; if (Array.isArray(v.cat) && v.cat.length === 3 && v.cat.every(Number.isFinite)) cat.position.set(...v.cat); toast('💾 Прогресс восстановлен') } catch (e) { } }
+        loadGame();
+        const questNames = ['Сделай 3 шалости', 'Укради рыбку со стола', 'Поцарапай мебель', 'Убеги от хозяина', 'Поспи на кровати', 'Устрой 10 шалостей']; let escaped = false, ate = false, scratched = false, slept = false;
+        function updateQuest() { const done = [count >= 3, ate, scratched, escaped, slept, count >= 10]; while (questIndex < done.length && done[questIndex]) { score += 5; scoreEl.textContent = score; toast('🎉 Задание выполнено! +5 🐟'); questIndex++ } document.querySelector('#questText').textContent = questNames[questIndex] || 'Все задания выполнены! 🏆' }
+        function toast(s) { msgEl.textContent = s; msgEl.style.opacity = 1; toastUntil = elapsed + 1.6 }
+        function collide(x, z, y) { if (x < -10.55 + radius || x > 10.55 - radius || z < -8.55 + radius || z > 8.55 - radius) return true; for (const b of colliders) { if (y + .12 < b.y2 && y + 1.05 > b.y1 && x + radius > b.x1 && x - radius < b.x2 && z + radius > b.z1 && z - radius < b.z2) return true } return false }
+        function support(x, z, feet, prevFeet) { let best = -1e3; for (const s of surfaces) { if (x + radius * .5 > s.x1 && x - radius * .5 < s.x2 && z + radius * .5 > s.z1 && z - radius * .5 < s.z2 && s.y <= Math.max(prevFeet, feet) + .18 && s.y > best) best = s.y } return best }
+        function jump() { if (playing && grounded) { velY = 6.7; grounded = false; sound('jump') } }
+        function action(kind) { if (!playing) return; let closest = null, best = 2.0; for (const it of interactables) { if (it.used) continue; if (kind !== 'knock' && it.kind !== kind) continue; const dist = Math.hypot(cat.position.x - it.mesh.position.x, cat.position.z - it.mesh.position.z); const height = Math.abs(cat.position.y + .75 - it.mesh.position.y); if (dist < best && height < 1.7) { closest = it; best = dist } } if (!closest) { toast(kind === 'scratch' ? 'Подойди к мебели 🐾' : kind === 'tear' ? 'Найди бумагу или ткань 🧻' : 'Подойди к предмету 💥'); return } hit(closest, kind) }
+        function hit(it, kind) { if (it.used) return; it.used = true; count++; alertness = Math.min(100, alertness + 16); score += kind === 'scratch' ? 3 : kind === 'tear' ? 2 : 1; mood = Math.min(100, mood + 4); scoreEl.textContent = score; countEl.textContent = count; const dir = new THREE.Vector3(it.mesh.position.x - cat.position.x, 0, it.mesh.position.z - cat.position.z).normalize(); it.vx = dir.x * 2.4; it.vz = dir.z * 2.4; it.vy = kind === 'knock' ? 3.2 : 0; sound(kind === 'knock' ? 'hit' : kind); if (kind === 'scratch') { scratched = true; it.mesh.material = M('#a66b72'); it.mesh.rotation.z = .12 } else if (kind === 'tear') { it.mesh.scale.set(.8, .45, 1); it.mesh.rotation.z = .35 } else { it.mesh.rotation.z = .18 } toast((kind === 'scratch' ? '🐾 Поцарапал: ' : kind === 'tear' ? '🧻 Разорвал: ' : '💥 Сбил: ') + it.name + '  +' + (kind === 'scratch' ? 3 : kind === 'tear' ? 2 : 1) + ' 🐟') }
+        function autoKnock() { for (const it of interactables) { if (it.used || it.kind === 'scratch' || it.kind === 'tear') continue; const dist = Math.hypot(cat.position.x - it.mesh.position.x, cat.position.z - it.mesh.position.z); if (dist < .68 && Math.abs(cat.position.y + .55 - it.mesh.position.y) < .65) { hit(it, 'knock'); break } } }
+        function eat() { if (!playing) return; const m = meals.find(m => !m.used && Math.hypot(cat.position.x - m.x, cat.position.z - m.z) < 1.7 && Math.abs(cat.position.y + .75 - m.y) < 1.6); if (!m) { toast('🐟 Найди рыбу на столе!'); return } m.used = true; m.fish.visible = false; hunger = Math.min(100, hunger + 35); mood = Math.min(100, mood + 8); score += 4; scoreEl.textContent = score; ate = true; sound('eat'); toast('🐟 Вкуснятина! +4 рыбки'); updateQuest() }
+        function sleep() { if (!playing) return; const close = Math.hypot(cat.position.x + 5, cat.position.z - 4) < 2.5 && cat.position.y > F - .3; if (!close) { toast('💤 Найди кровать наверху!'); return } sleeping = 4; energy = 100; mood = Math.min(100, mood + 15); slept = true; sound('sleep'); toast('💤 Мурр... котик отдыхает'); updateQuest() }
+        function meow() { if (!playing) return; sound('meow'); toast('МЯЯЯУ! 😺'); if (Math.hypot(cat.position.x - owner.position.x, cat.position.z - owner.position.z) < 5) alertness = Math.min(100, alertness + 22) }
+        const binds = [['jump', jump], ['swat', () => action('knock')], ['scratch', () => action('scratch')], ['tear', () => action('tear')], ['eat', eat], ['sleep', sleep], ['meow', meow], ['use', useThing]]; for (const [id, fn] of binds) document.getElementById(id).addEventListener('pointerdown', e => { e.preventDefault(); fn() });
+        addEventListener('keydown', e => { const k = e.key.toLowerCase(); if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) e.preventDefault(); if (!keys[k]) { if (e.code === 'Space') jump(); if (k === 'e') action('knock'); if (k === 'f') action('scratch'); if (k === 'r') action('tear'); if (k === 'g') eat(); if (k === 'h') sleep(); if (k === 'm') meow(); if (k === 'q') { camOrbit = 0; camPitch = .18 } if (k === 't') toggleTV(); if (k === 'c') toggleFridge(); if (k === 'o') toggleDoor(); if (k === 'p') saveGame(true) } keys[k] = true }); addEventListener('keyup', e => keys[e.key.toLowerCase()] = false); addEventListener('blur', () => { for (const k in keys) keys[k] = false });
+        document.addEventListener('contextmenu', e => e.preventDefault()); document.addEventListener('selectstart', e => e.preventDefault()); document.addEventListener('dragstart', e => e.preventDefault()); document.addEventListener('touchmove', e => { if (e.cancelable) e.preventDefault() }, { passive: false }); const joy = document.querySelector('#joy'), nub = document.querySelector('#nub'); let joyId = null; function joyMove(e) { const r = joy.getBoundingClientRect(), x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2, l = Math.hypot(x, y) || 1, k = Math.min(1, 43 / l); input.x = x * k / 43; input.y = -y * k / 43; nub.style.transform = `translate(${input.x * 43}px,${-input.y * 43}px)` } joy.addEventListener('pointerdown', e => { e.preventDefault(); joyId = e.pointerId; joy.setPointerCapture(joyId); joyMove(e) }); joy.addEventListener('pointermove', e => { e.preventDefault(); if (e.pointerId === joyId) joyMove(e) }); for (const evt of ['pointerup', 'pointercancel']) joy.addEventListener(evt, e => { if (e.pointerId === joyId) { joyId = null; input.x = input.y = 0; nub.style.transform = '' } });
+        let drag = false, prevX = 0, prevY = 0; renderer.domElement.addEventListener('pointerdown', e => { e.preventDefault(); drag = true; prevX = e.clientX; prevY = e.clientY; renderer.domElement.setPointerCapture(e.pointerId) }); renderer.domElement.addEventListener('pointermove', e => { e.preventDefault(); if (!drag) return; camOrbit -= (e.clientX - prevX) * .005; camPitch = THREE.MathUtils.clamp(camPitch + (e.clientY - prevY) * .003, -.28, .3); prevX = e.clientX; prevY = e.clientY }); renderer.domElement.addEventListener('pointerup', () => drag = false); renderer.domElement.addEventListener('pointercancel', () => drag = false);
+        document.querySelector('#play').onclick = () => { try { audio = new (window.AudioContext || window.webkitAudioContext)(); audio.resume() } catch (e) { } playing = true; document.querySelector('#start').style.display = 'none'; toast('Исследуй дом и устраивай шалости! 🐱') }; document.querySelector('#reset').onclick = () => { try { localStorage.removeItem('badcat3d-v04') } catch (e) { } location.reload() };
+        function animate() {
+            requestAnimationFrame(animate); const dt = Math.min(clock.getDelta(), .038); elapsed += dt; if (playing) {
+                playTime += dt; saveTimer += dt; if (saveTimer > 12) { saveTimer = 0; saveGame() }
+                // Human AI: follows a patrol route, reacts to noise and chases the cat on the ground floor.
+                ownerTimer += dt; const dOwner = Math.hypot(cat.position.x - owner.position.x, cat.position.z - owner.position.z); const catOnGround = cat.position.y < 1.9; const spotted = catOnGround && dOwner < 3.4 && alertness > 15;
+                if (spotted) { alertness = Math.min(100, alertness + dt * 25); ownerTarget = ownerTarget } else alertness = Math.max(0, alertness - dt * 4);
+                let goal = ownerWaypoints[ownerTarget]; if (alertness > 55 && catOnGround) goal = [cat.position.x, cat.position.z]; let ox = goal[0] - owner.position.x, oz = goal[1] - owner.position.z, od = Math.hypot(ox, oz); if (od < .5 && alertness <= 55) ownerTarget = (ownerTarget + 1) % ownerWaypoints.length; else if (od > .1) { const sp = alertness > 55 ? 2.25 : 1.05; owner.position.x += ox / od * sp * dt; owner.position.z += oz / od * sp * dt; owner.rotation.y = Math.atan2(ox, oz) } ownerLimbs.forEach((l, i) => l.rotation.x = Math.sin(elapsed * 5 + i * Math.PI) * .18);
+                if (alertness > 55 && dOwner < 1.1 && catOnGround) { score = Math.max(0, score - 3); scoreEl.textContent = score; alertness = 0; cat.position.set(-6, 0, 6); velY = 0; toast('😾 Хозяин поймал! −3 🐟'); sound('alert') }
+                if (alertness > 30 && dOwner > 6) { escaped = true; updateQuest() }
+                if (sleeping > 0) { sleeping -= dt; energy = Math.min(100, energy + dt * 12) } else { hunger = Math.max(0, hunger - dt * .18); energy = Math.max(0, energy - dt * .10) }
+                mood = THREE.MathUtils.clamp(mood + dt * (hunger > 30 && energy > 25 ? .12 : -.65), 0, 100); document.querySelector('#moodValue').textContent = mood > 65 ? 'Довольный 😺' : mood > 30 ? 'Скучает 😿' : 'Грустный 🙀'; document.querySelector('#hunger').textContent = Math.round(hunger); document.querySelector('#energy').textContent = Math.round(energy); document.querySelector('#alert').textContent = alertness > 55 ? 'ПОГОНЯ!' : alertness > 15 ? 'Подозревает' : 'Спокойно';
+                let dx = input.x + Number(!!(keys.d || keys.arrowright)) - Number(!!(keys.a || keys.arrowleft)), dz = input.y + Number(!!(keys.w || keys.arrowup)) - Number(!!(keys.s || keys.arrowdown)); const len = Math.hypot(dx, dz); if (len > .12) { dx /= Math.max(1, len); dz /= Math.max(1, len); const wx = -dx * Math.cos(camOrbit) + dz * Math.sin(camOrbit), wz = dz * Math.cos(camOrbit) + dx * Math.sin(camOrbit), speed = (keys.shift ? 5.5 : 3.7) * (energy < 15 ? .65 : 1) * (sleeping > 0 ? .15 : 1); const nx = cat.position.x + wx * speed * dt, nz = cat.position.z + wz * speed * dt; if (!collide(nx, cat.position.z, cat.position.y)) cat.position.x = nx; if (!collide(cat.position.x, nz, cat.position.y)) cat.position.z = nz; cat.rotation.y = Math.atan2(wx, wz); legs.forEach((l, i) => l.position.y = .24 + Math.sin(elapsed * speed * 4 + i * Math.PI) * .065) } else legs.forEach(l => l.position.y = .24);
+                // Gentle automatic stair stepping, without snagging on risers.
+                const onStairs = cat.position.x > 6.75 && cat.position.x < 9.45 && cat.position.z > 1.0 && cat.position.z < 8.1;
+                if (onStairs && velY <= 0) { const stairHeight = THREE.MathUtils.clamp((8.05 - cat.position.z) / (.47 * 14) * F, 0, F); if (Math.abs(cat.position.y - stairHeight) < .65) { cat.position.y = stairHeight; velY = 0; grounded = true } }
+                const previous = cat.position.y; velY -= 16 * dt; cat.position.y += velY * dt; const stairRamp = THREE.MathUtils.clamp((8.05 - cat.position.z) / (.47 * 14) * F, 0, F); const ground = onStairs && cat.position.y >= stairRamp - .8 ? Math.max(0, support(cat.position.x, cat.position.z, cat.position.y, previous), stairRamp) : Math.max(0, support(cat.position.x, cat.position.z, cat.position.y, previous)); if (velY <= 0 && ground > -100 && cat.position.y <= ground + .06 && previous >= ground - .2) { cat.position.y = ground; velY = 0; grounded = true } else grounded = false;
+                if (cat.position.y < -.3) { cat.position.set(-6, 0, 6); velY = 0; toast('Котик вернулся домой!') } for (const d of doors) d.pivot.rotation.y = THREE.MathUtils.lerp(d.pivot.rotation.y, d.open ? -1.3 : 0, Math.min(1, dt * 5)); fridgeDoor.rotation.y = THREE.MathUtils.lerp(fridgeDoor.rotation.y, fridgeOpen ? -1.6 : 0, Math.min(1, dt * 5)); buddyPhase += dt; buddy.position.x = -7 + Math.sin(buddyPhase * .45) * 1.1; buddy.position.z = -2 + Math.cos(buddyPhase * .45) * 1.2; buddy.rotation.y = buddyPhase * .45; tail.rotation.z = Math.sin(elapsed * 3) * .23; tail.rotation.x = Math.sin(elapsed * 4) * .18; autoKnock(); updateQuest(); for (const it of interactables) { if (!it.used || it.kind === 'scratch' || it.kind === 'tear') continue; it.vy -= 13 * dt; it.mesh.position.x += it.vx * dt; it.mesh.position.z += it.vz * dt; it.mesh.position.y += it.vy * dt; const floor = support(it.mesh.position.x, it.mesh.position.z, it.mesh.position.y - .2, it.mesh.position.y + .3); if (floor > -100 && it.mesh.position.y < floor + .23) { it.mesh.position.y = floor + .23; it.vy = Math.abs(it.vy) > .6 ? -it.vy * .2 : 0; it.vx *= .93; it.vz *= .93 } }
+                const second = cat.position.y > F - 1.1; let name = second ? '2 этаж · ' : '1 этаж · '; name += cat.position.x < 0 ? (cat.position.z < 0 ? (second ? 'Ванная' : 'Кухня') : (second ? 'Спальня' : 'Гостиная')) : (cat.position.z < 0 ? (second ? 'Кабинет' : 'Столовая') : (second ? 'Игровая' : 'Холл')); roomEl.textContent = '🏠 ' + name;
+            } if (elapsed > toastUntil) msgEl.style.opacity = 0;
+            // Stable third-person camera: only the player rotates the view; movement never spins it.
+            // Dragging mouse/finger changes camera yaw, and W / joystick forward follows that yaw.
+            const ang = camOrbit, dist = camZoom, firstFloor = cat.position.y < F - 1.0;
+            const maxCamY = firstFloor ? F - .48 : F + 3.05;
+            const target = new THREE.Vector3(cat.position.x, cat.position.y + .8, cat.position.z);
+            const desired = new THREE.Vector3(cat.position.x - Math.sin(ang) * dist,
+                Math.min(maxCamY, cat.position.y + 1.65 + dist * Math.sin(camPitch) * .38),
+                cat.position.z - Math.cos(ang) * dist);
+            // Do not raycast the ceiling or upper-floor furniture: these previously yanked the view upward.
+            // Keep the camera below the upper floor while the cat is downstairs.
+            const delta = desired.clone().sub(target);
+            const ray = new THREE.Raycaster(target, delta.clone().normalize(), .2, delta.length());
+            const hits = ray.intersectObjects(house.children, false).filter(h => h.object.geometry?.type === 'BoxGeometry' && h.distance > .75 && h.point.y < maxCamY - .05);
+            if (hits.length) desired.copy(target).addScaledVector(delta.normalize(), Math.max(.9, hits[0].distance - .25));
+            desired.y = Math.min(desired.y, maxCamY);
+            camera.position.lerp(desired, Math.min(1, dt * 12)); camera.position.y = Math.min(camera.position.y, maxCamY); camera.lookAt(target);
+            renderer.render(scene, camera)
+        } animate(); addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight) });
+    </script>
+</body>
+
+</html>
